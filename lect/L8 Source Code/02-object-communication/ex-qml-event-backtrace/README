@@ -1,0 +1,29 @@
+In Qt5 sources, put a breakpoint in QQuickMouseArea::mousePressEvent (file
+qtdeclarative/src/quick/items/qquickmousearea.cpp)
+
+Now execute the application and press the button in the QML window. The
+breakpoint will be hit, and you can see the call stack, which looks
+somewhat similar to this:
+
+0	QQuickMouseArea::mousePressEvent	qquickmousearea.cpp	691	0x7ffff7991394	
+1	QQuickItemPrivate::deliverMouseEvent	qquickitem.cpp	3822	0x7ffff78fe21f	
+2	QQuickCanvas::sendEvent	qquickcanvas.cpp	1739	0x7ffff7914a2a	
+3	QQuickCanvasPrivate::deliverInitialMousePressEvent	qquickcanvas.cpp	1121	0x7ffff7911850	
+4	QQuickCanvasPrivate::deliverInitialMousePressEvent	qquickcanvas.cpp	1110	0x7ffff7911699	
+5	QQuickCanvasPrivate::deliverInitialMousePressEvent	qquickcanvas.cpp	1110	0x7ffff7911699	
+6	QQuickCanvasPrivate::deliverInitialMousePressEvent	qquickcanvas.cpp	1110	0x7ffff7911699	
+7	QQuickCanvasPrivate::deliverMouseEvent	qquickcanvas.cpp	1142	0x7ffff7911a26	
+8	QQuickCanvas::mousePressEvent	qquickcanvas.cpp	1181	0x7ffff7911dba	
+9	QQuickView::mousePressEvent	qquickview.cpp	581	0x7ffff79eb2e3	
+10	QWindow::event	qwindow.cpp	1429	0x7ffff623e83e	
+11	QQuickCanvas::event	qquickcanvas.cpp	1070	0x7ffff791144a	
+12	QApplicationPrivate::notify_helper	qapplication.cpp	3589	0x7ffff69a2852	
+13	QApplication::notify	qapplication.cpp	3048	0x7ffff69a006e	
+14	QCoreApplication::notifyInternal	qcoreapplication.cpp	725	0x7ffff5c3fb3c	
+15	QCoreApplication::sendSpontaneousEvent	qcoreapplication.h	214	0x7ffff6236a67	
+16	QGuiApplicationPrivate::processMouseEvent	qguiapplication.cpp	1193	0x7ffff6232314	
+17	QGuiApplicationPrivate::processWindowSystemEvent	qguiapplication.cpp	1059	0x7ffff6231c86	
+18	QWindowSystemInterface::sendWindowSystemEvents	qwindowsysteminterface_qpa.cpp	488	0x7ffff62258c0	
+19	userEventSourceDispatch	qeventdispatcher_glib.cpp	77	0x7ffff0cf7e58	
+20	g_main_context_dispatch	/lib/x86_64-linux-gnu/libglib-2.0.so.0	0	0x7ffff39cbc9a	
+...	<More>				
