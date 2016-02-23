@@ -1,0 +1,49 @@
+﻿Build started 2/22/2016 2:35:04 PM.
+     1>Project "D:\COde\cqpstone\qip\qip.vcxproj" on node 2 (Build target(s)).
+     1>CustomBuild:
+         MOC Contrast.h
+         MOC Dummy.h
+         MOC MainWindow.h
+         MOC Threshold.h
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I. /IIP\win\header /IC:\Qt5\5.5\msvc2013_64\include /IC:\Qt5\5.5\msvc2013_64\include\QtWidgets /IC:\Qt5\5.5\msvc2013_64\include\QtGui /IC:\Qt5\5.5\msvc2013_64\include\QtANGLE /IC:\Qt5\5.5\msvc2013_64\include\QtCore /Imoc /I"C:\Qt5\5.5\msvc2013_64\mkspecs\win32-msvc2013" /Zi /nologo /W3 /WX- /MP /Od /D _WINDOWS /D UNICODE /D WIN32 /D WIN64 /D QT_WIDGETS_LIB /D QT_GUI_LIB /D QT_CORE_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"obj\\" /Fd"obj\vc120.pdb" /Gd /TP /errorReport:prompt -w34100 -w34189 -w44996 Contrast.cpp Dummy.cpp ImageFilter.cpp MainWindow.cpp Threshold.cpp main.cpp moc\moc_Contrast.cpp moc\moc_Dummy.cpp moc\moc_MainWindow.cpp moc\moc_Threshold.cpp
+         Contrast.cpp
+         Dummy.cpp
+         ImageFilter.cpp
+         MainWindow.cpp
+     1>Contrast.cpp(70): warning C4100: 'contrast' : unreferenced formal parameter
+     1>Contrast.cpp(70): warning C4100: 'brightness' : unreferenced formal parameter
+         Threshold.cpp
+     1>d:\code\cqpstone\qip\contrast.cpp(39): warning C4700: uninitialized local variable 'c' used
+     1>d:\code\cqpstone\qip\contrast.cpp(39): warning C4700: uninitialized local variable 'b' used
+         main.cpp
+         moc_Contrast.cpp
+         moc_Dummy.cpp
+         moc_MainWindow.cpp
+         moc_Threshold.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"debug\\qip.exe" /NOLOGO /LIBPATH:C:\Qt5\5.5\msvc2013_64\lib /LIBPATH:C:/Qt5/5.5/msvc2013_64/lib /LIBPATH:.\IP\win\lib C:\Qt5\5.5\msvc2013_64\lib\qtmaind.lib shell32.lib C:/Qt5/5.5/msvc2013_64/lib\Qt5Cored.lib opengl32.lib .\IP\win\lib\IP_d.lib C:\Qt5\5.5\msvc2013_64\lib\Qt5Widgetsd.lib C:\Qt5\5.5\msvc2013_64\lib\Qt5Guid.lib C:\Qt5\5.5\msvc2013_64\lib\Qt5Cored.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"debug\qip.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X64 "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" obj\Contrast.obj
+         obj\Dummy.obj
+         obj\ImageFilter.obj
+         obj\MainWindow.obj
+         obj\Threshold.obj
+         obj\main.obj
+         obj\moc_Contrast.obj
+         obj\moc_Dummy.obj
+         obj\moc_MainWindow.obj
+         obj\moc_Threshold.obj
+     1>IP_d.lib(IPcastimg.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcastimg.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPcastmem.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcastmem.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPcolorconv.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcolorconv.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPglobal.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPglobal.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPio.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPio.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPmmch.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPmmch.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPmmimg.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPmmimg.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPtoUI.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPtoUI.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+     1>IP_d.lib(IPutil.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPutil.obj)' or at 'D:\COde\cqpstone\qip\debug\vc120.pdb'; linking object as if no debug info
+         qip.vcxproj -> D:\COde\cqpstone\qip\debug\qip.exe
+     1>Done Building Project "D:\COde\cqpstone\qip\qip.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:01:02.69

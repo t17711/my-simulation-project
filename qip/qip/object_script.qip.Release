@@ -1,0 +1,12 @@
+INPUT(
+./obj\main.o
+./obj\MainWindow.o
+./obj\ImageFilter.o
+./obj\Dummy.o
+./obj\Threshold.o
+./obj\Contrast.o
+./obj\moc_MainWindow.o
+./obj\moc_Dummy.o
+./obj\moc_Threshold.o
+./obj\moc_Contrast.o
+);
