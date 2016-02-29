@@ -11,6 +11,7 @@
 #define CONTRAST_H
 
 #include "ImageFilter.h"
+#include "qboxlayout.h"
 
 class Contrast : public ImageFilter {
 	Q_OBJECT
@@ -25,6 +26,9 @@ protected:
 	void contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2);
 
 protected slots:
+	void changeBright(int);
+	void changeContrast(int);
+
 
 private:
 	// brightness/contrast controls
@@ -35,6 +39,7 @@ private:
 
 	// widgets and groupbox
 	QGroupBox	*m_ctrlGrp;	// groupbox for panel
+
 };
 
 #endif	// CONTRAST_H

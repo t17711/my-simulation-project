@@ -420,7 +420,7 @@ void MainWindow::display(int flag)
 	// convert from ImagePtr to QImage to Pixmap
 	QImage q;
 	IP_IPtoQImage(I, q);
-
+	
 	// convert from QImage to Pixmap; rescale if image is larger than view window
 	QPixmap p;
 	if(MIN(w, h) > MIN(ww, hh))
