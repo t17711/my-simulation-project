@@ -40,6 +40,7 @@ private:
 	// widgets and groupbox
 	QGroupBox	*m_ctrlGrp;	// groupbox for panel
 
+	int reference = 128;
 };
 
 #endif	// CONTRAST_H

@@ -14,6 +14,7 @@
 // standard include files
 //
 #include <QtWidgets>
+#include <qtoolbar.h>
 #include <iostream>
 #include <fstream>
 #include <cstdio>
@@ -44,6 +45,7 @@ public:
 
 public slots:
 	void		open		();
+	void		save		(); // saves current visible image
 	void		displayIn	();
 	void		displayOut	();
 	void		modeRGB		();
@@ -54,16 +56,17 @@ public slots:
 	void		execute		(QAction*);
 
 protected:
-	void		createActions	();
-	void		createMenus	();
-	void		createWidgets	();
-	QGroupBox*	createGroupPanel();
-	QGroupBox*	createGroupDisplay  ();
-	QGroupBox*	createDisplayButtons();
-	QGroupBox*	createModeButtons();
-	QHBoxLayout*	createExitButtons();
-	void		display		(int);
-	void		mode		(int);
+	void			createActions		();
+	void			createMenus			();
+	void			createWidgets		();
+	QGroupBox*		createGroupPanel	();
+	QGroupBox*		createGroupDisplay  ();
+	QGroupBox*		createDisplayButtons();
+	QGroupBox*		createModeButtons	();
+	QHBoxLayout*	createExitButtons	();
+	void			display				(int);
+	void			mode				(int);
+	void			setToolbarIcons		();
 
 
 private:
@@ -71,6 +74,7 @@ private:
 	QMenu*			m_menuPtOps;
 	QAction*		m_actionOpen;
 	QAction*		m_actionQuit;
+	QAction*		m_actionSave;
 	QAction*		m_actionThreshold;
 	QAction*		m_actionContrast ;
 
@@ -93,6 +97,10 @@ private:
 	ImagePtr		m_imageIn;
 	ImagePtr		m_imageSrc;
 	ImagePtr		m_imageDst;
+
+	// toolbar
+	QToolBar*			m_toolBar;
+
 };
 
 

@@ -50,7 +50,7 @@ Threshold::applyFilter(ImagePtr I1, ImagePtr I2)
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Threshold::createGroupBox:
+// Threshold::controlPanel:
 //
 // Create group box for control panel.
 //
@@ -71,13 +71,13 @@ Threshold::controlPanel()
 	m_slider->setTickInterval(25);
 	m_slider->setMinimum(1);
 	m_slider->setMaximum(MXGRAY);
-	m_slider->setValue  (MXGRAY>>1);
+	m_slider->setValue  (MXGRAY>>1); // divide by 2
 
 	// create spinbox
 	m_spinBox = new QSpinBox(m_ctrlGrp);
 	m_spinBox->setMinimum(1);
 	m_spinBox->setMaximum(MXGRAY);
-	m_spinBox->setValue  (MXGRAY>>1);
+	m_spinBox->setValue  (MXGRAY>>1); // set middle as default, never do division by to just shift
 
 	// init signal/slot connections for Threshold
 	connect(m_slider , SIGNAL(valueChanged(int)), this, SLOT(changeThr (int)));
@@ -105,6 +105,8 @@ Threshold::controlPanel()
 void
 Threshold::changeThr(int thr)
 {
+	// make sure slider and spinbox is in sync
+	// block signals why?
 	m_slider ->blockSignals(true);
 	m_slider ->setValue    (thr );
 	m_slider ->blockSignals(false);

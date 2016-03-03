@@ -14,9 +14,10 @@
 
 enum {DUMMY, THRESHOLD, CONTRAST};
 QString GroupBoxStyle = "QGroupBox {				\
-			border: 2px solid gray;			\
-			border-radius: 9px;			\
-			margin-top: 0.5em;}";
+									border: 4px solid blue;			\
+									border-radius: 9px;			\
+									background: yellow; \
+									margin-top: 0.5em;}"; // sets main widget groupboxe's style
 
 MainWindow *g_mainWindowP = NULL;
 
@@ -38,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
 	createActions();
 	createMenus  ();
 	createWidgets();
+	setToolbarIcons();
 }
 
 
@@ -61,6 +63,10 @@ MainWindow::createActions()
 	m_actionQuit = new QAction("&Quit", this);
 	m_actionQuit->setShortcut(tr("Ctrl+Q"));
 	connect(m_actionQuit, SIGNAL(triggered()), this, SLOT(close()));
+
+	m_actionSave = new QAction(tr("&Save"), this);
+	m_actionSave->setShortcut(tr("Ctrl+S"));
+	connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
 
 	//////////////////////////////
 	// Point Ops Actions
@@ -92,6 +98,7 @@ MainWindow::createMenus()
 	// File menu
 	m_menuFile = menuBar()->addMenu("&File");
 	m_menuFile->addAction(m_actionOpen);
+	m_menuFile->addAction(m_actionSave);
 	m_menuFile->addAction(m_actionQuit);
 
 	// Point Ops menu
@@ -114,6 +121,7 @@ MainWindow::createWidgets()
 	QHBoxLayout *hbox = new QHBoxLayout;
 	hbox->addWidget(createGroupDisplay());
 	hbox->setStretch(0, 1);
+	// makes image part stretched or panel will be 50 50, 0 is 1st item that has set stretched to true(1)
 	hbox->addWidget(createGroupPanel());
 
 	// create container widget and set its layout
@@ -121,7 +129,7 @@ MainWindow::createWidgets()
 	w->setLayout(hbox);
 
 	// set central widget so that it can be displayed
-	setCentralWidget(w);
+	setCentralWidget(w); // need to set it for qmain window for it to show up as central widget
 }
 
 
@@ -136,7 +144,7 @@ MainWindow::createGroupPanel()
 {
 	// init group box
 	QGroupBox *groupBox = new QGroupBox;
-	groupBox->setMinimumWidth(350);
+	groupBox->setMinimumWidth(350); // sets the minimum width for option panel
 
 	// filter's enum indexes into container of image filters
 	m_imageFilterType[DUMMY	   ] = new Dummy;
@@ -182,7 +190,7 @@ MainWindow::createGroupDisplay()
 {
 	// init group box
 	QGroupBox *groupBox = new QGroupBox;
-	groupBox->setStyleSheet(GroupBoxStyle);
+	groupBox->setStyleSheet(GroupBoxStyle); // sets boundary for better visual, dont need on window
 
 	// create stacked widget for input/output images
 	m_stackWidgetImages = new QStackedWidget;
@@ -192,18 +200,25 @@ MainWindow::createGroupDisplay()
 		m_stackWidgetImages->addWidget(new QLabel);
 
 	// add centering alignment on both labels
-	QLabel *label;
-	label = (QLabel *) m_stackWidgetImages->widget(0); label->setAlignment(Qt::AlignCenter);
-	label = (QLabel *) m_stackWidgetImages->widget(1); label->setAlignment(Qt::AlignCenter);
+	QLabel *label; 
+	// put image in center
+	// extract qlabel from m_stacked images and align it to center
+	label = (QLabel *) m_stackWidgetImages->widget(0); label->setAlignment(Qt::AlignCenter); // input
+	label = (QLabel *) m_stackWidgetImages->widget(1); label->setAlignment(Qt::AlignCenter);  // output
 
 	// set stacked widget to default setting: input image
-	m_stackWidgetImages->setCurrentIndex(0);
+	m_stackWidgetImages->setCurrentIndex(0);  // default to show input image
 
 	// assemble stacked widget in vertical layout
-	QVBoxLayout *vbox = new QVBoxLayout;
-	vbox->addWidget(m_stackWidgetImages);
-	groupBox->setLayout(vbox);
+	// add widget to layout , add layout to groupbox
+	// cant put widget to groupbox, group is widget , cant add widget to widget
 
+	QVBoxLayout *vbox = new QVBoxLayout; // create dummy layout and add widgets to it
+	vbox->addWidget(m_stackWidgetImages); // add widget to layout
+	groupBox->setLayout(vbox); // add layout to groupbox widget
+
+	groupBox->setMinimumWidth	(500); // sets the minimum width for option panel
+	groupBox->setMinimumHeight	(500);
 	return groupBox;
 }
 
@@ -488,7 +503,7 @@ MainWindow::execute(QAction* action)
 {
 	// skip over menu ops that don't require image processing
 	QString name = action->text();
-	if(name == QString("&Open") || name == QString("&Quit")) {
+	if(name == QString("&Open") || name == QString("&Quit") || name == QString("&Save")) {
 		m_code = -1;
 		return;
 	}
@@ -503,4 +518,41 @@ MainWindow::execute(QAction* action)
 	m_stackWidgetPanels->setCurrentIndex(m_code);
 	m_imageFilterType[m_code]->applyFilter(m_imageSrc, m_imageDst);
 	preview();
+}
+// MainWindow::setToolbarIcons
+// set toolbar buttons
+
+void MainWindow::setToolbarIcons(){
+	m_toolBar = new QToolBar(this);
+	m_toolBar->addAction(m_actionOpen);
+	m_toolBar->addAction(m_actionSave);
+	m_toolBar->addAction(m_actionThreshold);
+	m_toolBar->addAction(m_actionContrast);
+
+	m_toolBar->setIconSize(QSize(50, 50));
+	addToolBarBreak();
+	addToolBar(m_toolBar);
+	addToolBarBreak();
+}
+// MainWindow::save
+// saves current output image
+void MainWindow::save(){
+
+	QFileDialog dialog(this);
+
+	// open the last known working directory
+	if (m_currentDir.isEmpty())  return;
+	if (m_imageDst.isNull()) return;
+
+	QString filename = dialog.getSaveFileName(this,
+		tr("Save Image"), m_currentDir + "/new image", tr("Image Files (*.png *.jpg *.bmp)"));
+
+	QImage q;
+	IP_IPtoQImage(m_imageDst, q);
+
+	QPixmap p;
+	p=QPixmap::fromImage(q);
+
+	p.save(filename, "png");
+
 }
