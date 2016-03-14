@@ -1,4 +1,4 @@
-﻿Build started 3/13/2016 11:54:48 PM.
+﻿Build started 3/14/2016 1:00:38 PM.
      1>Project "D:\COde\cqpstone\qip\qip\qip.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I. /IIP\win\header /IC:\Qt5\5.5\msvc2013_64\include /IC:\Qt5\5.5\msvc2013_64\include\QtPrintSupport /IC:\Qt5\5.5\msvc2013_64\include\QtWidgets /IC:\Qt5\5.5\msvc2013_64\include\QtGui /IC:\Qt5\5.5\msvc2013_64\include\QtANGLE /IC:\Qt5\5.5\msvc2013_64\include\QtCore /Imoc /I"C:\Qt5\5.5\msvc2013_64\mkspecs\win32-msvc2013" /Zi /nologo /W3 /WX- /MP /Od /D _WINDOWS /D UNICODE /D WIN32 /D WIN64 /D QT_PRINTSUPPORT_LIB /D QT_WIDGETS_LIB /D QT_GUI_LIB /D QT_CORE_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"obj\\" /Fd"obj\vc120.pdb" /Gd /TP /errorReport:prompt -w34100 -w34189 -w44996 MainWindow.cpp
@@ -16,19 +16,9 @@
          obj\moc_MainWindow.obj
          obj\moc_Threshold.obj
          obj\moc_qcustomplot.obj
-     1>IP_d.lib(IPcastimg.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcastimg.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPcastmem.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcastmem.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPcolorconv.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPcolorconv.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPglobal.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPglobal.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPhisto.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPhisto.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPio.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPio.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPmmch.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPmmch.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPmmimg.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPmmimg.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPtoUI.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPtoUI.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
-     1>IP_d.lib(IPutil.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'IP_d.lib(IPutil.obj)' or at 'D:\COde\cqpstone\qip\qip\debug\vc120.pdb'; linking object as if no debug info
          qip.vcxproj -> D:\COde\cqpstone\qip\qip\debug\qip.exe
      1>Done Building Project "D:\COde\cqpstone\qip\qip\qip.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:12.01
+Time Elapsed 00:00:10.15

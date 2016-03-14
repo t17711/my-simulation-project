@@ -61,6 +61,7 @@ Contrast::applyFilter(ImagePtr I1, ImagePtr I2)
 QGroupBox*
 Contrast::controlPanel()
 {
+
 	// init group box
 	m_ctrlGrp = new QGroupBox("Brightness and Contrast");
 	

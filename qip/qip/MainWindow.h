@@ -117,6 +117,10 @@ private:
 	double			m_histoYmin[4];	// ymin for all histogram channels
 	double			m_histoYmax[4];	// ymax for all histogram channels
 
+public:
+	QPushButton*	m_buttonReset;
+
+
 };
 
 

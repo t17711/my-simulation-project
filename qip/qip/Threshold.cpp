@@ -57,6 +57,7 @@ Threshold::applyFilter(ImagePtr I1, ImagePtr I2)
 QGroupBox*
 Threshold::controlPanel()
 {
+
 	// init group box
 	m_ctrlGrp = new QGroupBox("Threshold");
 
@@ -172,7 +173,7 @@ Threshold::threshold(ImagePtr I1, int thr, ImagePtr I2) {
 //
 void
 Threshold::reset() {
-	m_slider->setValue(MXGRAY > 2); // just set the value. signals will take care of everything
+	m_slider->setValue(MXGRAY >> 1); // just set the value. signals will take care of everything
 }
 
 // disable buttons

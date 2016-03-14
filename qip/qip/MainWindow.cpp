@@ -361,18 +361,18 @@ QHBoxLayout*
 MainWindow::createExitButtons()
 {
 	// create pushbuttons
-	QPushButton *buttonReset = new QPushButton("Reset");
+	m_buttonReset = new QPushButton("Reset");
 	QPushButton *buttonQuit  = new QPushButton("Quit");
 
 	// init signal/slot connections
-	connect(buttonReset, SIGNAL(clicked()), this, SLOT(reset()));
+	connect(m_buttonReset, SIGNAL(clicked()), this, SLOT(reset()));
 	connect(buttonQuit , SIGNAL(clicked()), this, SLOT(quit ()));
 
 	// assemble pushbuttons in horizontal layout
 	QHBoxLayout *buttonLayout = new QHBoxLayout;
-	buttonLayout->addWidget(buttonReset);
+	buttonLayout->addWidget(m_buttonReset);
 	buttonLayout->addWidget(buttonQuit );
-
+	m_buttonReset->setDisabled(true);
 	return buttonLayout;
 }
 
@@ -386,8 +386,7 @@ MainWindow::createExitButtons()
 void
 MainWindow::reset()
 {
-
-m_imageFilterType[ m_code ]->reset();
+	m_imageFilterType[ m_code ]->reset();
 }
 
 
@@ -697,6 +696,8 @@ MainWindow::execute(QAction* action)
 	m_stackWidgetPanels->setCurrentIndex(m_code);
 	m_imageFilterType[m_code]->applyFilter(m_imageSrc, m_imageDst);
 	preview();
+	m_buttonReset->setDisabled(false);
+
 }
 // MainWindow::setToolbarIcons
 // set toolbar buttons

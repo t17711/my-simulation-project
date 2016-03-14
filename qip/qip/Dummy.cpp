@@ -34,3 +34,8 @@ Dummy::controlPanel()
 	m_ctrlGrp = new QGroupBox("");
 	return(m_ctrlGrp);
 }
+
+void
+Dummy::reset(){
+
+}

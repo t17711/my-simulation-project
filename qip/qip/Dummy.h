@@ -26,6 +26,7 @@ class Dummy : public ImageFilter {
 public:
 	Dummy		(QWidget *parent = 0);		// constructor
 	QGroupBox*	controlPanel();			// create control panel
+	void		reset();		// reset parameters
 
 private:
 	// widgets and groupbox
