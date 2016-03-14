@@ -12,12 +12,12 @@
 #include "Threshold.h"
 #include "Contrast.h"
 
-enum {DUMMY, THRESHOLD, CONTRAST};
+enum {DUMMY, THRESHOLD, CONTRAST, QUANTIZATION};
 enum { RGB, R, G, B, GRAY };
 
-QString GroupBoxStyle = "QGroupBox {				\
-									border: 4px solid blue;			\
-									border-radius: 9px;			\
+QString GroupBoxStyle = "QGroupBox {\
+									border: 4px solid blue;	\
+									border-radius: 9px;	\
 									background: yellow; \
 									margin-top: 0.5em;}"; // sets main widget groupboxe's style
 
