@@ -6,7 +6,7 @@
 //
 // Written by: George Wolberg, 2016
 // ======================================================================
-
+// qmake -tp vc
 #include "MainWindow.h"
 
 int main(int argc, char **argv)

@@ -24,6 +24,7 @@ public:
 	virtual QGroupBox* controlPanel	();		// create control panel
 	virtual bool	   applyFilter	(ImagePtr, ImagePtr); // filter input image -> make output
 	virtual void	   reset	();		// reset parameters
+	virtual	void		disable(bool);
 };
 
 #endif // IMAGEFILTER_H

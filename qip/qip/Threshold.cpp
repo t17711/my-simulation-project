@@ -91,7 +91,7 @@ Threshold::controlPanel()
 
 	// assign layout to group box
 	m_ctrlGrp->setLayout(layout);
-
+	disable(true);
 	return(m_ctrlGrp);
 }
 
@@ -172,4 +172,12 @@ Threshold::threshold(ImagePtr I1, int thr, ImagePtr I2) {
 //
 void
 Threshold::reset() {
+	m_slider->setValue(MXGRAY > 2); // just set the value. signals will take care of everything
+}
+
+// disable buttons
+void 
+Threshold::disable(bool flag){
+	m_slider->setDisabled(flag);
+	m_spinBox->setDisabled(flag);
 }

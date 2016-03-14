@@ -21,6 +21,7 @@ public:
 	QGroupBox*	controlPanel	();		// create control panel
 	bool		applyFilter(ImagePtr, ImagePtr);// apply filter to input to init output
 	void		reset		();		// reset parameters
+	void		disable(bool);
 
 protected:
 	void threshold(ImagePtr I1, int thr, ImagePtr I2);

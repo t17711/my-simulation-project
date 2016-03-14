@@ -56,3 +56,6 @@ ImageFilter::applyFilter(ImagePtr, ImagePtr)
 //
 void
 ImageFilter::reset() {}
+
+void
+ImageFilter::disable(bool){}

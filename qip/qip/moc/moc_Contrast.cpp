@@ -45,7 +45,7 @@ static const uint qt_meta_data_Contrast[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -53,12 +53,14 @@ static const uint qt_meta_data_Contrast[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   24,    2, 0x09 /* Protected */,
-       3,    1,   27,    2, 0x09 /* Protected */,
+       1,    1,   29,    2, 0x09 /* Protected */,
+       3,    1,   32,    2, 0x09 /* Protected */,
+       3,    1,   35,    2, 0x09 /* Protected */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Void, QMetaType::Int,    2,
+    QMetaType::Void, QMetaType::Double,    2,
 
        0        // eod
 };
@@ -71,6 +73,7 @@ void Contrast::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, vo
         switch (_id) {
         case 0: _t->changeBright((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 1: _t->changeContrast((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: _t->changeContrast((*reinterpret_cast< double(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -101,13 +104,13 @@ int Contrast::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
