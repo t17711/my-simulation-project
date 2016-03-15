@@ -38,6 +38,7 @@ HEADERS +=	MainWindow.h	\
 		Dummy.h		\
 		Threshold.h	\
 		Contrast.h	\
+		Quantization.h \
 
 		
 SOURCES +=	main.cpp	\ 
@@ -47,5 +48,6 @@ SOURCES +=	main.cpp	\
 		Dummy.cpp	\
 		Threshold.cpp	\
 		Contrast.cpp	\
+		Quantization.cpp \
 
 

@@ -11,6 +11,7 @@
 #include "Dummy.h"
 #include "Threshold.h"
 #include "Contrast.h"
+#include "Quantization.h"
 
 enum {DUMMY, THRESHOLD, CONTRAST, QUANTIZATION};
 enum { RGB, R, G, B, GRAY };
@@ -84,6 +85,10 @@ MainWindow::createActions()
 	m_actionContrast->setShortcut(tr("Ctrl+C"));
 	m_actionContrast->setData(CONTRAST);
 
+	m_actionQuantization = new QAction("&Quantization", this);
+	m_actionQuantization->setShortcut(tr("Ctrl+U"));
+	m_actionQuantization->setData(QUANTIZATION);
+
 	// one signal-slot connection for all actions;
 	// execute() will resolve which action was triggered
 	connect(menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(execute(QAction*)));
@@ -110,9 +115,8 @@ MainWindow::createMenus()
 	m_menuPtOps = menuBar()->addMenu("&Point Ops");
 	m_menuPtOps->addAction(m_actionThreshold);
 	m_menuPtOps->addAction(m_actionContrast );
+	m_menuPtOps->addAction(m_actionQuantization);
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createWidgets:
@@ -137,8 +141,6 @@ MainWindow::createWidgets()
 	setCentralWidget(w); // need to set it for qmain window for it to show up as central widget
 }
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createGroupPanel:
 //
@@ -152,17 +154,20 @@ MainWindow::createGroupPanel()
 	groupBox->setMinimumWidth(350); // sets the minimum width for option panel
 
 	// filter's enum indexes into container of image filters
-	m_imageFilterType[DUMMY	   ] = new Dummy;
-	m_imageFilterType[THRESHOLD] = new Threshold;
-	m_imageFilterType[CONTRAST ] = new Contrast;
+	m_imageFilterType[DUMMY	   ]	= new Dummy;
+	m_imageFilterType[THRESHOLD]	= new Threshold;
+	m_imageFilterType[CONTRAST ]	= new Contrast;
+	m_imageFilterType[QUANTIZATION] = new Quantization;
+
 
 	// create a stacked widget to hold multiple control panels
 	m_stackWidgetPanels = new QStackedWidget;
 
 	// add filter control panels to stacked widget
-	m_stackWidgetPanels->addWidget(m_imageFilterType[DUMMY    ]->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[THRESHOLD]->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[CONTRAST ]->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[DUMMY    ]		->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[THRESHOLD]		->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[CONTRAST ]		->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[QUANTIZATION]	->controlPanel());
 
 	// display blank dummmy panel initially
 	m_stackWidgetPanels->setCurrentIndex(0);
@@ -213,7 +218,6 @@ MainWindow::createGroupPanel()
 	return groupBox;
 }
 
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createGroupDisplay:
 //
@@ -258,8 +262,6 @@ MainWindow::createGroupDisplay()
 
 	return groupBox;
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createDisplayButtons:
@@ -349,7 +351,6 @@ MainWindow::createModeButtons()
 
 	return groupBox;
 }
-
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,7 +448,6 @@ MainWindow::open() {
 	enableActions();
 	preview();
 }
-
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -621,8 +621,6 @@ MainWindow::setHisto(int flag)
 }
 
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::mode:
 //
@@ -668,8 +666,6 @@ MainWindow::preview()
 	else	display(1);
 }
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::execute:
 //
@@ -708,6 +704,7 @@ void MainWindow::setToolbarIcons(){
 	m_toolBar->addAction(m_actionSave);
 	m_toolBar->addAction(m_actionThreshold);
 	m_toolBar->addAction(m_actionContrast);
+	m_toolBar->addAction(m_actionQuantization);
 
 	m_toolBar->setIconSize(QSize(50, 50));
 	addToolBarBreak();
@@ -749,6 +746,6 @@ void MainWindow::enableActions(){
 	// enable image filters
 	m_imageFilterType[THRESHOLD]->disable(false);
 	m_imageFilterType[CONTRAST]->disable(false);
-
+	m_imageFilterType[QUANTIZATION]->disable(false);
 
 }

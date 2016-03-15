@@ -140,6 +140,7 @@
     <ClCompile Include="Dummy.cpp" />
     <ClCompile Include="ImageFilter.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="Quantization.cpp" />
     <ClCompile Include="Threshold.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="qcustomplot.cpp" />
@@ -200,6 +201,24 @@ endlocal</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC MainWindow.h</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_MainWindow.cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <CustomBuild Include="Quantization.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Quantization.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+if errorlevel 1 goto VCEnd
+C:\Qt5\5.5\msvc2013_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1800 -D_WIN32 -D_WIN64 -IC:/Qt5/5.5/msvc2013_64/mkspecs/win32-msvc2013 -ID:/COde/cqpstone/qip/qip -ID:/COde/cqpstone/qip/qip/IP/win/header -IC:/Qt5/5.5/msvc2013_64/include -IC:/Qt5/5.5/msvc2013_64/include/QtPrintSupport -IC:/Qt5/5.5/msvc2013_64/include/QtWidgets -IC:/Qt5/5.5/msvc2013_64/include/QtGui -IC:/Qt5/5.5/msvc2013_64/include/QtANGLE -IC:/Qt5/5.5/msvc2013_64/include/QtCore Quantization.h -o moc\moc_Quantization.cpp
+if errorlevel 1 goto VCEnd
+endlocal</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOC Quantization.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_Quantization.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Quantization.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+if errorlevel 1 goto VCEnd
+C:\Qt5\5.5\msvc2013_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1800 -D_WIN32 -D_WIN64 -IC:/Qt5/5.5/msvc2013_64/mkspecs/win32-msvc2013 -ID:/COde/cqpstone/qip/qip -ID:/COde/cqpstone/qip/qip/IP/win/header -IC:/Qt5/5.5/msvc2013_64/include -IC:/Qt5/5.5/msvc2013_64/include/QtPrintSupport -IC:/Qt5/5.5/msvc2013_64/include/QtWidgets -IC:/Qt5/5.5/msvc2013_64/include/QtGui -IC:/Qt5/5.5/msvc2013_64/include/QtANGLE -IC:/Qt5/5.5/msvc2013_64/include/QtCore Quantization.h -o moc\moc_Quantization.cpp
+if errorlevel 1 goto VCEnd
+endlocal</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC Quantization.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_Quantization.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
     <CustomBuild Include="Threshold.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Threshold.h;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
@@ -241,6 +260,7 @@ endlocal</Command>
     <ClCompile Include="moc\moc_Contrast.cpp" />
     <ClCompile Include="moc\moc_Dummy.cpp" />
     <ClCompile Include="moc\moc_MainWindow.cpp" />
+    <ClCompile Include="moc\moc_Quantization.cpp" />
     <ClCompile Include="moc\moc_Threshold.cpp" />
     <ClCompile Include="moc\moc_qcustomplot.cpp" />
   </ItemGroup>

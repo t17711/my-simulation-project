@@ -39,6 +39,9 @@
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Quantization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Threshold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -62,6 +65,9 @@
     <CustomBuild Include="MainWindow.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="Quantization.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
     <CustomBuild Include="Threshold.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -77,6 +83,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_MainWindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_Quantization.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_Threshold.cpp">

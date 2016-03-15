@@ -83,7 +83,7 @@ private:
 	QAction*		m_actionSave;
 	QAction*		m_actionThreshold;
 	QAction*		m_actionContrast ;
-	
+	QAction*		m_actionQuantization;
 	// toolbar
 	QToolBar*			m_toolBar;
 
