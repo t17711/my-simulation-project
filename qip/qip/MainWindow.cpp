@@ -12,8 +12,13 @@
 #include "Threshold.h"
 #include "Contrast.h"
 #include "Quantization.h"
+// histo
+#include "HistogramEqualize.h"
+#include "HistogramMatch.h"
+#include "HistogramStretch.h"
 
-enum {DUMMY, THRESHOLD, CONTRAST, QUANTIZATION};
+enum { DUMMY, THRESHOLD, CONTRAST, QUANTIZATION,
+	HISTOGRAMSTRETCH, HISTOGRAMEEQUALIZE, HISTOGRAMMATCH};
 enum { RGB, R, G, B, GRAY };
 
 QString GroupBoxStyle = "QGroupBox {\
@@ -89,6 +94,21 @@ MainWindow::createActions()
 	m_actionQuantization->setShortcut(tr("Ctrl+U"));
 	m_actionQuantization->setData(QUANTIZATION);
 
+	//////////////////////////////////////////
+	//// histogram actions
+	/////////////////////////////////////////
+	m_actionHistStretch = new QAction("&Histogram Stretch", this);
+	m_actionHistStretch->setShortcut(tr("Ctrl + H"));
+	m_actionHistStretch->setData(HISTOGRAMSTRETCH);
+
+	m_actionHistEqualize = new QAction("&Histogram Equalize", this);
+	m_actionHistEqualize->setShortcut(tr("Ctrl + E"));
+	m_actionHistEqualize->setData(HISTOGRAMEEQUALIZE);
+
+	m_actionHistMatch = new QAction("&Histogram Match", this);
+	m_actionHistMatch->setShortcut(tr("Ctrl + M"));
+	m_actionHistMatch->setData(HISTOGRAMMATCH);
+
 	// one signal-slot connection for all actions;
 	// execute() will resolve which action was triggered
 	connect(menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(execute(QAction*)));
@@ -116,6 +136,13 @@ MainWindow::createMenus()
 	m_menuPtOps->addAction(m_actionThreshold);
 	m_menuPtOps->addAction(m_actionContrast );
 	m_menuPtOps->addAction(m_actionQuantization);
+
+	// histogram menu
+	m_menuHisOpts = menuBar()->addMenu("&Histogram opts");
+	m_menuHisOpts->addAction(m_actionHistStretch);
+	m_menuHisOpts->addAction(m_actionHistEqualize);
+	m_menuHisOpts->addAction(m_actionHistMatch);
+
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,6 +185,11 @@ MainWindow::createGroupPanel()
 	m_imageFilterType[THRESHOLD]	= new Threshold;
 	m_imageFilterType[CONTRAST ]	= new Contrast;
 	m_imageFilterType[QUANTIZATION] = new Quantization;
+	
+	m_imageFilterType[HISTOGRAMSTRETCH]		= new HistogramStretch;
+	m_imageFilterType[HISTOGRAMEEQUALIZE]	= new HistogramEqualize;
+	m_imageFilterType[HISTOGRAMMATCH]		= new HistogramMatch;
+
 
 
 	// create a stacked widget to hold multiple control panels
@@ -168,6 +200,11 @@ MainWindow::createGroupPanel()
 	m_stackWidgetPanels->addWidget(m_imageFilterType[THRESHOLD]		->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilterType[CONTRAST ]		->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilterType[QUANTIZATION]	->controlPanel());
+	// histogram
+	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMSTRETCH]	->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMEEQUALIZE]->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMMATCH]	->controlPanel());
+
 
 	// display blank dummmy panel initially
 	m_stackWidgetPanels->setCurrentIndex(0);
@@ -705,6 +742,13 @@ void MainWindow::setToolbarIcons(){
 	m_toolBar->addAction(m_actionThreshold);
 	m_toolBar->addAction(m_actionContrast);
 	m_toolBar->addAction(m_actionQuantization);
+
+	m_toolBar->addAction(m_actionHistStretch);
+	m_toolBar->addAction(m_actionHistEqualize);
+	m_toolBar->addAction(m_actionHistMatch);
+
+
+
 
 	m_toolBar->setIconSize(QSize(50, 50));
 	addToolBarBreak();

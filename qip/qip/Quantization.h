@@ -18,6 +18,7 @@ protected:
 
 protected slots:
 	void changeQnt(int);
+	void changeDither(int);
 
 private:
 	// threshold controls

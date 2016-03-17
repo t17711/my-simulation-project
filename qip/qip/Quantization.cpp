@@ -51,11 +51,12 @@ Quantization::controlPanel(){
 	layout->addWidget(m_slider, 0, 1);
 	layout->addWidget(m_spinBox, 0, 2);
 
-	layout->addWidget(m_checkBox, 1, 2);
-	layout->addWidget(label2, 1, 1);
+	layout->addWidget(m_checkBox, 1, 1, Qt::AlignRight);
+	layout->addWidget(label2, 1, 2, Qt::AlignLeft);
 	
 	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(changeQnt(int)));
 	connect(m_spinBox, SIGNAL(valueChanged(int)), this, SLOT(changeQnt(int)));
+	connect(m_checkBox, SIGNAL(stateChanged(int)), this, SLOT(changeDither(int)));
 
 	m_ctrlGrp->setLayout(layout);
 
@@ -81,32 +82,63 @@ Quantization :: changeQnt(int level){
 
 }
 void 
+Quantization::changeDither(int temp){
+	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+	g_mainWindowP->displayOut();
+
+}
+void 
 Quantization::quantization(ImagePtr I1, int level, bool dither, ImagePtr I2){
 	// any value below thr is 0.
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 	int w = I1->width();  // input image
 	int h = I1->height();
+	int scale = MXGRAY / level;
+	int bias = scale / 2; // assign random error first
 	int total = w * h; // 
-	level = MXGRAY- level;  // level is 256 - 256 + 1
 	// compute lut[]
 
 	int i, lut[MXGRAY];  // size 256
-	for (i = 0; i < MXGRAY; ++i) lut[i] = level * (int)(i / level);
+	for (i = 0; i < MXGRAY; ++i) lut[i] = scale * (int)(i / scale);
 	int type;
-
 	ChannelPtr<uchar> p1, p2, endd;
-	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
-		for (endd = p1 + total; p1 < endd;){
 
-			*p2++ = lut[*p1++]; 
+	if (dither){
+		int k = 0;
+		int j = 0;
+		int osc = 1;
+		for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+			IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+			for (endd = p1 + total; p1 < endd; p1++){
+				int ttttt = ((rand() & 0x7FFF));
+				j = ttttt/32767. * bias;
+				if (osc = 1){
+					k = CLIP(lut[*p1] + j, 0, MXGRAY);
+					osc = -1;
+				}
+				else{
+					k = CLIP(lut[*p1] - j, 0, MXGRAY);
+					osc = 1;
+				}
+			//	bias = (k - *p1++);
+				*p2++ = k;
+			}
+
 		}
-
+	}
+	
+	else{
+		for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+			IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+			for (endd = p1 + total; p1 < endd;){
+				*p2++ = (lut[*p1++]);
+			}
+		}
 	}
 }
 void
 Quantization::reset() {
-		m_slider->setValue(8); // just set the value. signals will take care of everything
+		m_slider->setValue(MXGRAY); // just set the value. signals will take care of everything
 		m_checkBox->setChecked(false);
 ;}
 // disable

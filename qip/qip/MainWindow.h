@@ -78,12 +78,23 @@ protected:
 private:
 	QMenu*			m_menuFile;
 	QMenu*			m_menuPtOps;
+	QMenu*			m_menuHisOpts; // added histogram opts
 	QAction*		m_actionOpen;
 	QAction*		m_actionQuit;
+
+	// actions
 	QAction*		m_actionSave;
+
+	// point opts
 	QAction*		m_actionThreshold;
 	QAction*		m_actionContrast ;
 	QAction*		m_actionQuantization;
+
+	// histogram opts
+	QAction*		m_actionHistStretch;
+	QAction*		m_actionHistEqualize;
+	QAction*		m_actionHistMatch;
+
 	// toolbar
 	QToolBar*			m_toolBar;
 
