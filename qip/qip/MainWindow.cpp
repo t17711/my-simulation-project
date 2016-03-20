@@ -346,8 +346,6 @@ MainWindow::createDisplayButtons()
 	return groupBox;
 }
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createModeButtons:
 //
@@ -414,8 +412,6 @@ MainWindow::createExitButtons()
 	return buttonLayout;
 }
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::reset:
 //
@@ -426,8 +422,6 @@ MainWindow::reset()
 {
 	m_imageFilterType[ m_code ]->reset();
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::quit:
@@ -440,8 +434,6 @@ MainWindow::quit()
 	// close the dialog window
 	close();
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::open:
@@ -539,7 +531,6 @@ void MainWindow::display(int flag)
 		displayHistogram(I);
 
 }
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::displayHistogram:
@@ -641,7 +632,6 @@ void MainWindow::displayHistogram(ImagePtr I)
 	m_histogram->replot();
 }
 
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::setHisto:
 //
@@ -686,8 +676,6 @@ void MainWindow::mode(int flag)
 	// display image
 	preview();
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::preview:
@@ -747,9 +735,6 @@ void MainWindow::setToolbarIcons(){
 	m_toolBar->addAction(m_actionHistEqualize);
 	m_toolBar->addAction(m_actionHistMatch);
 
-
-
-
 	m_toolBar->setIconSize(QSize(50, 50));
 	addToolBarBreak();
 	addToolBar(m_toolBar);
@@ -791,5 +776,5 @@ void MainWindow::enableActions(){
 	m_imageFilterType[THRESHOLD]->disable(false);
 	m_imageFilterType[CONTRAST]->disable(false);
 	m_imageFilterType[QUANTIZATION]->disable(false);
-
+	m_imageFilterType[HISTOGRAMSTRETCH]->disable(false);
 }

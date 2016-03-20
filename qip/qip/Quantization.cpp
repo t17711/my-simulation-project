@@ -82,7 +82,7 @@ Quantization :: changeQnt(int level){
 
 }
 void 
-Quantization::changeDither(int temp){
+Quantization::changeDither(int){
 	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
 	g_mainWindowP->displayOut();
 

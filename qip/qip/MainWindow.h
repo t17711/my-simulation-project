@@ -130,6 +130,7 @@ private:
 
 public:
 	QPushButton*	m_buttonReset;
+	void			enableRadio(bool);
 
 
 };

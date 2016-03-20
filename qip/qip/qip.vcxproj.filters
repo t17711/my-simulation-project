@@ -74,9 +74,9 @@
     <CustomBuild Include="HistogramMatch.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <ClInclude Include="HistogramStretch.h">
+    <CustomBuild Include="HistogramStretch.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
+    </CustomBuild>
     <ClInclude Include="ImageFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -101,6 +101,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_HistogramMatch.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_HistogramStretch.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_MainWindow.cpp">

@@ -39,9 +39,9 @@ HEADERS +=	MainWindow.h	\
 		Threshold.h	\
 		Contrast.h	\
 		Quantization.h \
+		HistogramStretch.h \
 		HistogramEqualize.h \
 		HistogramMatch.h \
-		HistogramStretch.h \
 
 		
 SOURCES +=	main.cpp	\ 
@@ -52,8 +52,8 @@ SOURCES +=	main.cpp	\
 		Threshold.cpp	\
 		Contrast.cpp	\
 		Quantization.cpp \
+		HistogramStretch.cpp \
 		HistogramEqualize.cpp \
 		HistogramMatch.cpp \
-		HistogramStretch.cpp \
 
 
