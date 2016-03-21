@@ -68,9 +68,9 @@
     <CustomBuild Include="Dummy.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <ClInclude Include="HistogramEqualize.h">
+    <CustomBuild Include="HistogramEqualize.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
+    </CustomBuild>
     <CustomBuild Include="HistogramMatch.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -98,6 +98,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_Dummy.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_HistogramEqualize.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_HistogramMatch.cpp">

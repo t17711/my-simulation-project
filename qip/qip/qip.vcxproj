@@ -185,7 +185,24 @@ endlocal</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC Dummy.h</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_Dummy.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="HistogramEqualize.h" />
+    <CustomBuild Include="HistogramEqualize.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HistogramEqualize.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+if errorlevel 1 goto VCEnd
+C:\Qt5\5.5\msvc2013_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1800 -D_WIN32 -D_WIN64 -IC:/Qt5/5.5/msvc2013_64/mkspecs/win32-msvc2013 -ID:/COde/cqpstone/qip/qip -ID:/COde/cqpstone/qip/qip/IP/win/header -IC:/Qt5/5.5/msvc2013_64/include -IC:/Qt5/5.5/msvc2013_64/include/QtPrintSupport -IC:/Qt5/5.5/msvc2013_64/include/QtWidgets -IC:/Qt5/5.5/msvc2013_64/include/QtGui -IC:/Qt5/5.5/msvc2013_64/include/QtANGLE -IC:/Qt5/5.5/msvc2013_64/include/QtCore HistogramEqualize.h -o moc\moc_HistogramEqualize.cpp
+if errorlevel 1 goto VCEnd
+endlocal</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOC HistogramEqualize.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc\moc_HistogramEqualize.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HistogramEqualize.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+if errorlevel 1 goto VCEnd
+C:\Qt5\5.5\msvc2013_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1800 -D_WIN32 -D_WIN64 -IC:/Qt5/5.5/msvc2013_64/mkspecs/win32-msvc2013 -ID:/COde/cqpstone/qip/qip -ID:/COde/cqpstone/qip/qip/IP/win/header -IC:/Qt5/5.5/msvc2013_64/include -IC:/Qt5/5.5/msvc2013_64/include/QtPrintSupport -IC:/Qt5/5.5/msvc2013_64/include/QtWidgets -IC:/Qt5/5.5/msvc2013_64/include/QtGui -IC:/Qt5/5.5/msvc2013_64/include/QtANGLE -IC:/Qt5/5.5/msvc2013_64/include/QtCore HistogramEqualize.h -o moc\moc_HistogramEqualize.cpp
+if errorlevel 1 goto VCEnd
+endlocal</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC HistogramEqualize.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc\moc_HistogramEqualize.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
     <CustomBuild Include="HistogramMatch.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HistogramMatch.h;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
@@ -299,6 +316,7 @@ endlocal</Command>
   <ItemGroup>
     <ClCompile Include="moc\moc_Contrast.cpp" />
     <ClCompile Include="moc\moc_Dummy.cpp" />
+    <ClCompile Include="moc\moc_HistogramEqualize.cpp" />
     <ClCompile Include="moc\moc_HistogramMatch.cpp" />
     <ClCompile Include="moc\moc_HistogramStretch.cpp" />
     <ClCompile Include="moc\moc_MainWindow.cpp" />

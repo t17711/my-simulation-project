@@ -51,8 +51,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 }
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createActions:
 //
@@ -114,8 +112,6 @@ MainWindow::createActions()
 	connect(menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(execute(QAction*)));
 
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::createMenus:
@@ -181,11 +177,14 @@ MainWindow::createGroupPanel()
 	groupBox->setMinimumWidth(350); // sets the minimum width for option panel
 
 	// filter's enum indexes into container of image filters
-	m_imageFilterType[DUMMY	   ]	= new Dummy;
-	m_imageFilterType[THRESHOLD]	= new Threshold;
-	m_imageFilterType[CONTRAST ]	= new Contrast;
-	m_imageFilterType[QUANTIZATION] = new Quantization;
+	m_imageFilterType[DUMMY	   ]			= new Dummy;
+
+	// point operations
+	m_imageFilterType[THRESHOLD]			= new Threshold;
+	m_imageFilterType[CONTRAST ]			= new Contrast;
+	m_imageFilterType[QUANTIZATION]			= new Quantization;
 	
+	// histogram operations
 	m_imageFilterType[HISTOGRAMSTRETCH]		= new HistogramStretch;
 	m_imageFilterType[HISTOGRAMEEQUALIZE]	= new HistogramEqualize;
 	m_imageFilterType[HISTOGRAMMATCH]		= new HistogramMatch;
@@ -196,10 +195,10 @@ MainWindow::createGroupPanel()
 	m_stackWidgetPanels = new QStackedWidget;
 
 	// add filter control panels to stacked widget
-	m_stackWidgetPanels->addWidget(m_imageFilterType[DUMMY    ]		->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[THRESHOLD]		->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[CONTRAST ]		->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[QUANTIZATION]	->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[DUMMY    ]			->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[THRESHOLD]			->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[CONTRAST ]			->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[QUANTIZATION]		->controlPanel());
 	// histogram
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMSTRETCH]	->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMEEQUALIZE]->controlPanel());
@@ -217,40 +216,40 @@ MainWindow::createGroupPanel()
 	m_histogram = new QCustomPlot;
 
 	// set histogram title
-	m_histogram->plotLayout()->insertRow(0);
-	m_histogram->plotLayout()->addElement(0, 0, new QCPPlotTitle(m_histogram, "Histogram"));
+	m_histogram->plotLayout()->		insertRow(0);
+	m_histogram->plotLayout()->		addElement(0, 0, new QCPPlotTitle(m_histogram, "Histogram"));
 
 	// assign label axes
-	m_histogram->xAxis->setLabel("Intensity");
-	m_histogram->yAxis->setLabel("Frequency");
-	m_histogram->xAxis->setAutoTickStep(0);
-	m_histogram->xAxis->setTickStep(32.);
+	m_histogram->xAxis->	setLabel		("Intensity");
+	m_histogram->yAxis->	setLabel		("Frequency");
+	m_histogram->xAxis->	setAutoTickStep	(0);
+	m_histogram->xAxis->	setTickStep		(32.);
 
 	// set axes ranges, so we see all the data
-	m_histogram->xAxis->setRange(0, MXGRAY);
-	m_histogram->yAxis->setRange(0, MXGRAY);
-	m_histogram->setMinimumHeight(400);
-	m_histogram->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+	m_histogram->xAxis->	setRange			(0, MXGRAY);
+	m_histogram->yAxis->	setRange			(0, MXGRAY);
+	m_histogram->			setMinimumHeight	(400);
+	m_histogram->			setInteractions		(QCP::iRangeDrag | QCP::iRangeZoom);
 
 	// create extension and insert histogram
-	m_extension = new QWidget;
-	QVBoxLayout *vBox2 = new QVBoxLayout(m_extension);
-	vBox2->addWidget(m_histogram);
+	m_extension				= new QWidget;
+	QVBoxLayout *vBox2		= new QVBoxLayout(m_extension);
+	vBox2->addWidget		(m_histogram);
 
 	// start dialog with hidden histogram
-	m_extension->hide();
+	m_extension->			hide();
 
 	// set signal-slot connection
 	connect(m_checkboxHisto, SIGNAL(stateChanged(int)), this, SLOT(setHisto(int)));
 
 	// assemble stacked widget in vertical layout
 	QVBoxLayout *vbox = new QVBoxLayout;
-	vbox->addLayout(hbox);
-	vbox->addWidget(m_stackWidgetPanels);
-	vbox->addWidget(m_extension);
-	vbox->addStretch(1);
-	vbox->addLayout(createExitButtons());
-	groupBox->setLayout(vbox);
+	vbox->		addLayout	(hbox);
+	vbox->		addWidget	(m_stackWidgetPanels);
+	vbox->		addWidget	(m_extension);
+	vbox->		addStretch	(1);
+	vbox->		addLayout	(createExitButtons());
+	groupBox->	setLayout	(vbox);
 
 	return groupBox;
 }
@@ -265,9 +264,9 @@ MainWindow::createGroupDisplay()
 {
 	// init group box
 	QGroupBox *groupBox = new QGroupBox;
-	groupBox->setMinimumWidth(700);
-	groupBox->setMinimumHeight(700);
-	groupBox->setStyleSheet(GroupBoxStyle); // sets boundary for better visual, dont need on window
+	groupBox->setMinimumWidth	(700);
+	groupBox->setMinimumHeight	(700);
+	groupBox->setStyleSheet		(GroupBoxStyle); // sets boundary for better visual, dont need on window
 
 	// create stacked widget for input/output images
 	m_stackWidgetImages = new QStackedWidget;
@@ -290,12 +289,12 @@ MainWindow::createGroupDisplay()
 	// add widget to layout , add layout to groupbox
 	// cant put widget to groupbox, group is widget , cant add widget to widget
 
-	QVBoxLayout *vbox = new QVBoxLayout; // create dummy layout and add widgets to it
-	vbox->addWidget(m_stackWidgetImages); // add widget to layout
-	groupBox->setLayout(vbox); // add layout to groupbox widget
+	QVBoxLayout *vbox		= new QVBoxLayout; // create dummy layout and add widgets to it
+	vbox->		addWidget			(m_stackWidgetImages); // add widget to layout
+	groupBox->	setLayout			(vbox); // add layout to groupbox widget
 
-	groupBox->setMinimumWidth	(500); // sets the minimum width for option panel
-	groupBox->setMinimumHeight	(500);
+	groupBox->		setMinimumWidth		(500); // sets the minimum width for option panel
+	groupBox->		setMinimumHeight	(500);
 
 	return groupBox;
 }
@@ -647,13 +646,13 @@ MainWindow::setHisto(int flag)
 	preview();
 }
 
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MainWindow::mode:
 //
 // Slot functions to display RGB and grayscale images.
 //
 void MainWindow::modeRGB () { mode(0); }
+
 void MainWindow::modeGray() { mode(1); }
 
 void MainWindow::mode(int flag)
@@ -724,22 +723,24 @@ MainWindow::execute(QAction* action)
 // set toolbar buttons
 
 void MainWindow::setToolbarIcons(){
-	m_toolBar = new QToolBar(this);
-	m_toolBar->addAction(m_actionOpen);
-	m_toolBar->addAction(m_actionSave);
-	m_toolBar->addAction(m_actionThreshold);
-	m_toolBar->addAction(m_actionContrast);
-	m_toolBar->addAction(m_actionQuantization);
+	m_toolBar =		new QToolBar(this);
+	m_toolBar->		addAction(m_actionOpen);
+	m_toolBar->		addAction(m_actionSave);
+	m_toolBar->		addAction(m_actionThreshold);
+	m_toolBar->		addAction(m_actionContrast);
+	m_toolBar->		addAction(m_actionQuantization);
 
-	m_toolBar->addAction(m_actionHistStretch);
-	m_toolBar->addAction(m_actionHistEqualize);
-	m_toolBar->addAction(m_actionHistMatch);
+	m_toolBar->		addAction(m_actionHistStretch);
+	m_toolBar->		addAction(m_actionHistEqualize);
+	m_toolBar->		addAction(m_actionHistMatch);
 
-	m_toolBar->setIconSize(QSize(50, 50));
-	addToolBarBreak();
-	addToolBar(m_toolBar);
-	addToolBarBreak();
+	m_toolBar->		setIconSize(QSize(50, 50));
+
+	addToolBarBreak		();
+	addToolBar			(m_toolBar);
+	addToolBarBreak		();
 }
+
 // MainWindow::save
 // saves current output image
 void MainWindow::save(){
@@ -766,15 +767,24 @@ void MainWindow::save(){
 /* disable buttons that are not used until button are enabled*/
 void MainWindow::enableActions(){
 	// enable save and groupbox actions
-	m_actionSave->setDisabled(false);
-	m_radioMode[0]->setDisabled(false);
-	m_radioMode[1]->setDisabled(false);
-	m_radioDisplay[0]->setDisabled(false);
-	m_radioDisplay[1]->setDisabled(false);
-	m_checkboxHisto->setDisabled(false);
+	m_actionSave->							setDisabled(false);
+	
+	// radio enable rgb, grey mode
+	m_radioMode[0]->						setDisabled(false);
+	m_radioMode[1]->						setDisabled(false);
+	
+	// enable input output button
+	m_radioDisplay[0]->						setDisabled(false);
+	m_radioDisplay[1]->						setDisabled(false);
+	
+	// enable histogram
+	m_checkboxHisto->						setDisabled(false);
+	
 	// enable image filters
-	m_imageFilterType[THRESHOLD]->disable(false);
-	m_imageFilterType[CONTRAST]->disable(false);
-	m_imageFilterType[QUANTIZATION]->disable(false);
-	m_imageFilterType[HISTOGRAMSTRETCH]->disable(false);
+	m_imageFilterType[THRESHOLD]->			disable(false);
+	m_imageFilterType[CONTRAST]->			disable(false);
+	m_imageFilterType[QUANTIZATION]->		disable(false);
+	m_imageFilterType[HISTOGRAMSTRETCH]->	disable(false);
+	m_imageFilterType[HISTOGRAMEEQUALIZE]->	disable(false);
+
 }

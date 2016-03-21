@@ -6,20 +6,20 @@
 class HistogramStretch :public ImageFilter {
 	Q_OBJECT
 public:
-	HistogramStretch(QWidget *parent = 0);
-	QGroupBox*			controlPanel();			// create control panel
-	void				reset();		// reset parameters
-	bool		applyFilter(ImagePtr, ImagePtr);// apply filter to input to init output
-	void		disable(bool);
-	int			getMin();
+						HistogramStretch	(QWidget *parent = 0);
+	QGroupBox*			controlPanel		();			// create control panel
+	void				reset				();		// reset parameters
+	bool				applyFilter			(ImagePtr, ImagePtr);// apply filter to input to init output
+	void				disable				(bool);
 protected:
-	void histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2);
+	void			histogramStretch	(ImagePtr I1, int min,		int max, ImagePtr I2);
+	void			getHistogram		(ImagePtr I	, int histogram[]);
 
 protected slots:
-	void changeMin(int);
-	void changeMax(int);
-	void changeMinAuto(int);
-	void changeMaxAuto(int);
+	void changeMin		(int);
+	void changeMax		(int);
+	void changeMinAuto	(int);
+	void changeMaxAuto	(int);
 
 private:
 	// widgets and groupbox
@@ -31,7 +31,6 @@ private:
 
 	QCheckBox	*m_CheckBoxAutoMin;			// auto min check box
 	QCheckBox	*m_CheckBoxAutoMax; 		// auto min check box
-
 };
 
 #endif
