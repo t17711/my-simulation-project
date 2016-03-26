@@ -28,24 +28,24 @@ protected:
 	void contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2);
 
 protected slots:
-	void changeBright(int);
-	void changeContrast(int);
-	void changeContrast(double);
+	void		changeBright	(int);
+	void		changeContrast	(int);
+	void		changeContrast	(double);
 
 
 private:
 	// brightness/contrast controls
-	QSlider		*m_sliderB ;	// brightness slider
-	QSlider		*m_sliderC ;	// contrast   slider
-	QSpinBox	*m_spinBoxB;	// brightness spin box
+	QSlider			*m_sliderB ;	// brightness slider
+	QSlider			*m_sliderC ;	// contrast   slider
+	QSpinBox		*m_spinBoxB;	// brightness spin box
 	QDoubleSpinBox	*m_spinBoxC;	// contrast   spin box
 
 	// widgets and groupbox
-	QGroupBox	*m_ctrlGrp;	// groupbox for panel
+	QGroupBox		*m_ctrlGrp;	// groupbox for panel
 	// calculate contrast
-	double getContrast(double);
-	int		get_Contrast_to_range(double);
-	int reference = 128;
+	double			getContrast				(double);
+	int				get_Contrast_to_range	(double);
+	int				reference				 = 128;
 };
 
 #endif	// CONTRAST_H

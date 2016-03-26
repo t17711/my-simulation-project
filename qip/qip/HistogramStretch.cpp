@@ -56,8 +56,7 @@ HistogramStretch::controlPanel()
 	m_spinBoxMin->	setRange(0, MXGRAY - 5);
 	m_spinBoxMin->	setValue(0);
 
-	m_CheckBoxAutoMin= new QCheckBox(m_ctrlGrp);
-	QLabel *label_min_auto = new QLabel(tr("auto"));
+	m_CheckBoxAutoMin = new QCheckBox(tr("auto"),m_ctrlGrp);
 
 
 	// for maximum
@@ -73,22 +72,19 @@ HistogramStretch::controlPanel()
 	m_spinBoxMax->	setRange(5, MXGRAY);
 	m_spinBoxMax->	setValue(MXGRAY);
 
-	m_CheckBoxAutoMax		= new QCheckBox(m_ctrlGrp);
-	QLabel *label_max_auto	= new QLabel(tr("auto"));
+	m_CheckBoxAutoMax = new QCheckBox(tr("auto"), m_ctrlGrp);
 
 	// layout
 	QGridLayout *layout		= new QGridLayout;
 	layout->addWidget	(label_min,				0, 0);
 	layout->addWidget	(m_sliderMin,			1, 0);
 	layout->addWidget	(m_spinBoxMin,			1, 1);
-	layout->addWidget	(m_CheckBoxAutoMin,		1, 2, Qt::AlignRight);
-	layout->addWidget	(label_min_auto,		1, 3, Qt::AlignLeft);
+	layout->addWidget	(m_CheckBoxAutoMin,		1, 2, Qt::AlignLeft);
 
 	layout->addWidget	(label_max,				2, 0);
 	layout->addWidget	(m_sliderMax,			3, 0);
 	layout->addWidget	(m_spinBoxMax,			3, 1);
-	layout->addWidget	(m_CheckBoxAutoMax,		3, 2, Qt::AlignRight);
-	layout->addWidget	(label_max_auto,		3, 3, Qt::AlignLeft);
+	layout->addWidget	(m_CheckBoxAutoMax,		3, 2, Qt::AlignLeft);
 
 	connect(m_sliderMin,		SIGNAL(valueChanged(int)),	this, SLOT(changeMin(int)));
 	connect(m_spinBoxMin,		SIGNAL(valueChanged(int)),	this, SLOT(changeMin(int)));
@@ -279,7 +275,7 @@ HistogramStretch::histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2){
 	int diff = max - min;
 	// get look up table
 	for (int i = 0; i < MXGRAY; ++i)
-		lut[i] = MXGRAY*(CLIP((i - min), 0 ,255)) / diff;
+		lut[i] = CLIP((MXGRAY*(i - min) / diff), 0, MXGRAY);
 	// create image
 
 	int type;

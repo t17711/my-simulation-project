@@ -688,6 +688,7 @@ MainWindow::preview()
 	if(m_radioDisplay[0]->isChecked())
 		display(0);
 	else	display(1);
+	displayOut();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -786,5 +787,7 @@ void MainWindow::enableActions(){
 	m_imageFilterType[QUANTIZATION]->		disable(false);
 	m_imageFilterType[HISTOGRAMSTRETCH]->	disable(false);
 	m_imageFilterType[HISTOGRAMEEQUALIZE]->	disable(false);
+	m_imageFilterType[HISTOGRAMMATCH]->		disable(false);
+
 
 }

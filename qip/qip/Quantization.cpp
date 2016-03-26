@@ -42,17 +42,14 @@ Quantization::controlPanel(){
 	m_spinBox->setValue(MXGRAY-1);
 
 	// checkbox
-	QLabel *label2 = new QLabel;
-	label2->setText(QString("Dither"));
-	m_checkBox = new QCheckBox(m_ctrlGrp);
+	m_checkBox = new QCheckBox(tr("Dither"),m_ctrlGrp);
 
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(label, 0, 0);
 	layout->addWidget(m_slider, 0, 1);
 	layout->addWidget(m_spinBox, 0, 2);
 
-	layout->addWidget(m_checkBox, 1, 1, Qt::AlignRight);
-	layout->addWidget(label2, 1, 2, Qt::AlignLeft);
+	layout->addWidget(m_checkBox, 1, 1, Qt::AlignLeft);
 	
 	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(changeQnt(int)));
 	connect(m_spinBox, SIGNAL(valueChanged(int)), this, SLOT(changeQnt(int)));
