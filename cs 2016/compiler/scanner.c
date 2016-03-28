@@ -1,25 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
 
-unsigned get_token		(char *buffer, int i, struct token* token_list , int j);
-
-unsigned get_eof		(struct token* token_list, int j);
-unsigned comment		(char *buffer,int i, struct token* token_list, int j, int type);
-unsigned identifier		(char *buffer,int i, struct token* token_list, int j);
-unsigned digit_token	(char *buffer,int i, struct token* token_list, int j);
-unsigned double_token	(char *buffer,int i, struct token* token_list, int j);
-unsigned exp_token		(char *buffer,int i, struct token* token_list, int j);
-
-unsigned get_string_token(char *buffer,int i, struct token* token_list, int j);
-
-unsigned operator_token	(char *buffer,int i, struct token* token_list, int j);
-unsigned include_token	(char *buffer,int i, struct token* token_list, int j, int type);
-//unsigned define_token	(char *buffer,int i, struct token* token_list, int j);
-unsigned hash_token	(char *buffer,int i, struct token* token_list, int j);
-
+// if there is end of file or error stop program
 unsigned get_eof		(struct token* token_list, int j)
 {
 	//printf("get_eof");
@@ -328,6 +308,12 @@ LOOP:
 		return operator_token(buffer,i, token_list, j);
 	
 }
+
+/////////////////////////////////////////////
+/* main function for scanner
+	* It checks what characters are and sends to functions to get token
+	
+	*/
 
 unsigned get_string_token(char *buffer,int i, struct token* token_list, int j)
 {

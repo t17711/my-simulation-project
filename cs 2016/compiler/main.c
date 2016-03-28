@@ -1,10 +1,14 @@
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+
 #include "extra_func_def.c"
 #include "symbol_check.c"
-
+#include "header.c"
 #include "scanner.c"
-#include "string.h"
 
 
 int main()
@@ -31,7 +35,7 @@ int main()
 	int j = 0;
 	
 	struct token token_list[size + 1];
-
+	// fill the token list from buffer
 	get_token(buffer,0, token_list , 0);
 	
 	j = 0;

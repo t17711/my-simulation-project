@@ -17,14 +17,14 @@ public:
 
 protected slots:
 	void				cumulativeHist		(int);
-	void				maxEntropyHist		(int);
+	void				maxFlatHist		(int);
 
 
 private:
 	// widgets and groupbox
 	QGroupBox	*m_ctrlGrp;				// groupbox for panel
 	QCheckBox	*m_CheckBoxCummulative;	// auto min check box
-	QCheckBox	*m_CheckBoxEntropy;		// auto min check box
+	QCheckBox	*m_CheckBoxFlat;		// auto min check box
 };
 
 #endif
