@@ -13,6 +13,7 @@ unsigned digit_token	(char *buffer,int i, struct token* token_list, int j);
 unsigned double_token	(char *buffer,int i, struct token* token_list, int j);
 unsigned exp_token		(char *buffer,int i, struct token* token_list, int j);
 
+unsigned get_string_token(char *buffer,int i, struct token* token_list, int j);
 
 unsigned operator_token	(char *buffer,int i, struct token* token_list, int j);
 unsigned include_token	(char *buffer,int i, struct token* token_list, int j, int type);
@@ -226,6 +227,8 @@ unsigned operator_token		(char *buffer,int i, struct token* token_list, int j)
 			return hash_token(buffer, i, token_list, j);
 		case '.':
 			return get_token(buffer, i, token_list, j);
+		case '"':
+			return get_string_token(buffer, i , token_list, j);
 		default:
 			printf("incorrect operator %c \n", curr);
 			return get_eof(token_list, j);
@@ -323,5 +326,25 @@ LOOP:
 		return digit_token(buffer,i, token_list, j);
 	else if (curr > 32 && !('A' <= curr && curr <= 'z') && !('0' <= curr && curr <= '9') )
 		return operator_token(buffer,i, token_list, j);
+	
+}
+
+unsigned get_string_token(char *buffer,int i, struct token* token_list, int j)
+{
+	token_list[j].name = TK_STRING;  // ist take everything as int
+	char curr;
+	curr = buffer[i];
+	while(curr != '"')
+	{
+		if (curr == '\0')
+		{
+			printf("bad string\n");
+			return get_eof(token_list, j);
+		} 
+		string_copy(token_list[j].value, &curr);
+		curr = buffer[++i];
+	}
+	
+	return get_token(buffer, i+1, token_list, j+1);
 	
 }

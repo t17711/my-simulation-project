@@ -5,78 +5,51 @@ unsigned clear(char* array)
 		array[i++]='\0';
 }
 
+unsigned check_keyword_iter (struct token *tk , char *key, int size, token_name x)
+{
+	int i = 0;
+	while(i<size){
+		if (tk->value[i] && tk->value[i] == key [i]) i++;
+		else return 0;
+	}
+	if (!tk->value[i])
+	{
+		clear(tk->value);
+		tk->name = x;
+	}
+	return 1;
+}
+
 unsigned check_keyword(struct token *tk)
 {
 	// check for for
-	if (tk->value[0] && tk->value[0] =='F')
-	{
-		if (tk->value[1] && tk->value[1] =='O')
-		if (tk->value[2] && tk->value[2] =='R')
-			if (!tk->value[3])
-			{
-			clear(tk->value);
-			tk->name = TK_FOR;
-			return 1;
-			}
-	}
+	char f [3] = {'F' , 'O', 'R'};
+	if (tk->value[0] == 'F')
+		check_keyword_iter		(tk, f, 3 , TK_FOR);
 	
-	// check for while
-	if(tk->value[0] && tk->value[0] =='W')
-	{
-		if(tk->value[1] && tk->value[1] =='H')
-		if(tk->value[2] && tk->value[2] =='I')
-		if(tk->value[3] && tk->value[3] =='L')
-		if(tk->value[4] && tk->value[4] =='E')
-		if (!tk->value[5])
-			{
-			clear(tk->value);
-			tk->name = TK_WHILE;
-			return 1;
-			}
-	}
+	char i[3] = {'I', 'N' ,'T'};
+	if (tk->value[0] == 'I')
+		check_keyword_iter		(tk, i, 3, TK_INT_DEF);
 	
-	// check for int definition	
-	if	(tk->value[0] && tk->value[0] =='I')
-	{
-		if(tk->value[1] && tk->value[1] =='N')
-		if(tk->value[2] && tk->value[2] =='T')
-		if (!tk->value[3])
-			{
-			clear(tk->value);
-			tk->name = TK_INT_DEF;
-			return 1;
-			}
-	}
-	// check for double definition
-	if		(tk->value[0] && tk->value[0] =='D')
-	{
-		if(tk->value[1] && tk->value[1] =='O')
-		if(tk->value[2] && tk->value[2] =='U')
-		if(tk->value[3] && tk->value[3] =='B')
-		if(tk->value[4] && tk->value[4] =='L')
-		if(tk->value[5] && tk->value[5] =='E')
-		if(!tk->value[6])
-			{
-			clear(tk->value);
-			tk->name = 	TK_DOUBLE_DEF;
-			return 1;
-			}
-	}
-	//check for return
-	if(tk->value[0] && tk->value[0] =='R')
-	{
-		if(tk->value[1] && tk->value[1] =='E')
-		if(tk->value[2] && tk->value[2] =='T')
-		if(tk->value[3] && tk->value[3] =='U')
-		if(tk->value[4] && tk->value[4] =='R')
-		if(tk->value[5] && tk->value[5] =='N')
-		if(!tk->value[6])
-			{
-			clear(tk->value);
-			tk->name = 	TK_RETURN;
-			return 1;
-			}
-	}
+	char d[6] = {'D', 'O' ,'U', 'B', 'L', 'E'};
+	if (tk->value[0] == 'D')
+		check_keyword_iter		(tk, d, 6 , TK_DOUBLE_DEF);
+	
+	char s[6] = {'S', 'T' ,'R', 'I', 'N', 'G'};
+	if (tk->value[0] == 'S')
+		check_keyword_iter		(tk, s, 6 , TK_STRING_DEF);
 
-	return 0;
+	char w[5] = {'W', 'H' ,'I', 'L', 'E'};
+	if (tk->value[0] == 'W')
+		check_keyword_iter		(tk, w, 5 , TK_WHILE);
+	
+	char r[6] = {'R', 'E' ,'T', 'U', 'R', 'N'};
+	if (tk->value[0] == 'R')
+		check_keyword_iter		(tk, r, 6 , TK_RETURN);
+	
+	char b[4] = {'B', 'O' ,'O', 'L'};
+	if (tk->value[0] == 'B')
+		check_keyword_iter		(tk, b, 4 , TK_BOOL_DEF);
+
+	return 1;
 }

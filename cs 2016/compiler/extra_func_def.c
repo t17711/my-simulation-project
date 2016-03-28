@@ -5,6 +5,7 @@ typedef enum {
 	TK_END, // } end scope
 	TK_INT, // INTEGER
 	TK_DOUBLE,
+	TK_BOOL,
 	TK_STRING, // string
 	TK_CHAR, // char
 	TK_PLUS, 
@@ -32,6 +33,8 @@ typedef enum {
 	TK_WHILE,
 	TK_INT_DEF,
 	TK_DOUBLE_DEF,
+	TK_BOOL_DEF,
+	TK_STRING_DEF,
 	TK_RETURN
 }token_name ;
 
@@ -65,6 +68,10 @@ const char*  get_token_name(unsigned tk){
 
 		case	TK_STRING: // string
 		return 	"TK_STRING";
+		
+		case	TK_BOOL: // string
+		return 	"TK_BOOL";
+		
 		case	TK_CHAR: // char
 		return 	"TK_CHAR";
 		case	TK_PLUS:
@@ -136,6 +143,12 @@ const char*  get_token_name(unsigned tk){
 		case	TK_DOUBLE_DEF:	
 		return 	"TK_DOUBLE_DEF";
 		
+		case	TK_BOOL_DEF: // string
+		return 	"TK_BOOL_DEF";
+		
+		case	TK_STRING_DEF:	
+		return 	"TK_STRING_DEF";
+
 		case	TK_RETURN:	
 		return 	"TK_RETURN";
 		
@@ -148,7 +161,7 @@ void print_token(struct token tk){
 	printf(get_token_name(tk.name));
 	printf("\t");
 	int i = 0;
-	if (tk.name == TK_ID)
+	if (tk.name == TK_ID || tk.name == TK_STRING)
 		while (tk.value[i] != '\0') 
 		{
 			printf("%c", tk.value[i]);
