@@ -29,7 +29,7 @@
 #include "IP.h"
 #include "IPtoUI.h"
 #include "ImageFilter.h"
-#include "qcustomplot.h"
+#include "qcustomplot.h"	
 
 #define MAXFILTERS	50
 
@@ -79,6 +79,7 @@ private:
 	QMenu*			m_menuFile;
 	QMenu*			m_menuPtOps;
 	QMenu*			m_menuHisOpts; // added histogram opts
+	QMenu*			m_menuNeighOpts;
 	QAction*		m_actionOpen;
 	QAction*		m_actionQuit;
 
@@ -94,6 +95,11 @@ private:
 	QAction*		m_actionHistStretch;
 	QAction*		m_actionHistEqualize;
 	QAction*		m_actionHistMatch;
+	QAction*		m_actionBlur;
+	//QAction*		m_actionMedian;
+	QAction*		m_actionSharpen;
+
+
 
 	// toolbar
 	QToolBar*			m_toolBar;

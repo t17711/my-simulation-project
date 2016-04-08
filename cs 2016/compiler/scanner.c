@@ -260,7 +260,7 @@ unsigned include_token	(char *buffer,int i, struct token* token_list, int j, int
 
 unsigned hash_token	(char *buffer,int i, struct token* token_list, int j)
 {
-	printf("hash_token\n");
+//	printf("hash_token\n");
 	if (buffer[i++]	== 'I'	&& 
 		buffer[i++] == 'N'	&& 
 		buffer[i++] == 'C'	&& 

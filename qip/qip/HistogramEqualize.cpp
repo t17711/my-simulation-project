@@ -5,7 +5,7 @@
 extern MainWindow *g_mainWindowP;
 
 HistogramEqualize::
-	HistogramEqualize (QWidget *parent) : ImageFilter(parent)
+HistogramEqualize(QWidget *parent) : HistogramMatch(parent)
 {
 }
 
@@ -155,6 +155,7 @@ HistogramEqualize::maxFlatHist(int){
 	ImagePtr I1 = g_mainWindowP->imageSrc();
 	ImagePtr I2 = g_mainWindowP->imageDst();
 
+#if 0
 
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 	int w = I1->width();  // input image
@@ -229,6 +230,13 @@ HistogramEqualize::maxFlatHist(int){
 			*p2++;
 		}
 	}
+
+
+#endif
+
+	long double hist[MXGRAY];
+	for (int i = 0; i < MXGRAY; ++i) hist[i] = 1.;
+	this->HistMatch(I1, hist, I2);
 
 	g_mainWindowP->displayOut();
 

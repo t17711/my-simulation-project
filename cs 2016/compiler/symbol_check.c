@@ -1,3 +1,6 @@
+
+char symbol_table [11]= {3 & 0xff, ( 3 >> 8) & 0xff ,'F' , 'O', 'R',TK_FOR};
+
 unsigned clear(char* array)
 {
 	int i=0;

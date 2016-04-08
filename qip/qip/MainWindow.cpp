@@ -16,9 +16,12 @@
 #include "HistogramEqualize.h"
 #include "HistogramMatch.h"
 #include "HistogramStretch.h"
+#include "Blur.h"
+#include "Sharpen.h"
 
 enum { DUMMY, THRESHOLD, CONTRAST, QUANTIZATION,
-	HISTOGRAMSTRETCH, HISTOGRAMEEQUALIZE, HISTOGRAMMATCH};
+	HISTOGRAMSTRETCH, HISTOGRAMEEQUALIZE, HISTOGRAMMATCH, 
+	BLUR, SHARPEN};
 enum { RGB, R, G, B, GRAY };
 
 QString GroupBoxStyle = "QGroupBox {\
@@ -65,6 +68,7 @@ MainWindow::createActions()
 
 	m_actionOpen = new QAction("&Open", this);
 	m_actionOpen->setShortcut(tr("Ctrl+O"));
+	m_actionOpen->setIcon(QIcon("icons/open.png"));
 	connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(open()));
 
 	m_actionQuit = new QAction("&Quit", this);
@@ -73,6 +77,8 @@ MainWindow::createActions()
 
 	m_actionSave = new QAction(tr("&Save"), this);
 	m_actionSave->setShortcut(tr("Ctrl+S"));
+	m_actionSave->setIcon(QIcon("icons/save.png"));
+
 	connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
 	m_actionSave->setDisabled(true);
 
@@ -82,10 +88,12 @@ MainWindow::createActions()
 
 	m_actionThreshold = new QAction("&Threshold", this);
 	m_actionThreshold->setShortcut(tr("Ctrl+T"));
+	m_actionThreshold->setIcon(QIcon("icons/threshold.png"));
 	m_actionThreshold->setData(THRESHOLD);
 
 	m_actionContrast = new QAction("&Contrast", this);
 	m_actionContrast->setShortcut(tr("Ctrl+C"));
+	m_actionContrast->setIcon(QIcon("icons/contrast.png"));
 	m_actionContrast->setData(CONTRAST);
 
 	m_actionQuantization = new QAction("&Quantization", this);
@@ -106,6 +114,17 @@ MainWindow::createActions()
 	m_actionHistMatch = new QAction("&Histogram Match", this);
 	m_actionHistMatch->setShortcut(tr("Ctrl + M"));
 	m_actionHistMatch->setData(HISTOGRAMMATCH);
+
+	//////////////////////////////////////////
+	//// neighborhood actions
+	/////////////////////////////////////////
+	m_actionBlur = new QAction("Blur", this);
+	m_actionBlur->setShortcut(tr("Ctrl + B"));
+	m_actionBlur->setData(BLUR);
+
+	m_actionSharpen = new QAction("Sharpen", this);
+	m_actionSharpen->setShortcut(tr("Ctrl + h"));
+	m_actionSharpen->setData(SHARPEN);
 
 	// one signal-slot connection for all actions;
 	// execute() will resolve which action was triggered
@@ -128,16 +147,23 @@ MainWindow::createMenus()
 	m_menuFile->addAction(m_actionQuit);
 
 	// Point Ops menu
-	m_menuPtOps = menuBar()->addMenu("&Point Ops");
-	m_menuPtOps->addAction(m_actionThreshold);
-	m_menuPtOps->addAction(m_actionContrast );
-	m_menuPtOps->addAction(m_actionQuantization);
+	m_menuPtOps	= menuBar()->addMenu("&Point Ops");
+
+	m_menuPtOps		->addAction		(m_actionThreshold);
+	m_menuPtOps		->addAction		(m_actionContrast );
+	m_menuPtOps		->addAction		(m_actionQuantization);
 
 	// histogram menu
 	m_menuHisOpts = menuBar()->addMenu("&Histogram opts");
 	m_menuHisOpts->addAction(m_actionHistStretch);
 	m_menuHisOpts->addAction(m_actionHistEqualize);
 	m_menuHisOpts->addAction(m_actionHistMatch);
+
+	// neighbor hood operation menu
+	m_menuNeighOpts = menuBar()->addMenu("&Neighborhood opts");
+	m_menuNeighOpts	->addAction(m_actionBlur);
+	m_menuNeighOpts	->addAction(m_actionSharpen);
+
 
 }
 
@@ -189,6 +215,9 @@ MainWindow::createGroupPanel()
 	m_imageFilterType[HISTOGRAMEEQUALIZE]	= new HistogramEqualize;
 	m_imageFilterType[HISTOGRAMMATCH]		= new HistogramMatch;
 
+	// neighborhood operations
+	m_imageFilterType[BLUR]					= new Blur;
+	m_imageFilterType[SHARPEN]				= new Sharpen;
 
 
 	// create a stacked widget to hold multiple control panels
@@ -203,6 +232,10 @@ MainWindow::createGroupPanel()
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMSTRETCH]	->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMEEQUALIZE]->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMMATCH]	->controlPanel());
+
+	// neighbor hood
+	m_stackWidgetPanels->addWidget(m_imageFilterType[BLUR]->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[SHARPEN]->controlPanel());
 
 
 	// display blank dummmy panel initially
@@ -725,15 +758,25 @@ MainWindow::execute(QAction* action)
 
 void MainWindow::setToolbarIcons(){
 	m_toolBar =		new QToolBar(this);
+	// open close
 	m_toolBar->		addAction(m_actionOpen);
 	m_toolBar->		addAction(m_actionSave);
+
+	// point opts
 	m_toolBar->		addAction(m_actionThreshold);
 	m_toolBar->		addAction(m_actionContrast);
 	m_toolBar->		addAction(m_actionQuantization);
 
+	// hist opts
 	m_toolBar->		addAction(m_actionHistStretch);
 	m_toolBar->		addAction(m_actionHistEqualize);
 	m_toolBar->		addAction(m_actionHistMatch);
+
+	// neighbor hood opts
+
+	m_toolBar->		addAction(m_actionBlur);
+	m_toolBar->		addAction(m_actionSharpen);
+
 
 	m_toolBar->		setIconSize(QSize(50, 50));
 
@@ -782,12 +825,15 @@ void MainWindow::enableActions(){
 	m_checkboxHisto->						setDisabled(false);
 	
 	// enable image filters
-	m_imageFilterType[THRESHOLD]->			disable(false);
-	m_imageFilterType[CONTRAST]->			disable(false);
-	m_imageFilterType[QUANTIZATION]->		disable(false);
-	m_imageFilterType[HISTOGRAMSTRETCH]->	disable(false);
-	m_imageFilterType[HISTOGRAMEEQUALIZE]->	disable(false);
-	m_imageFilterType[HISTOGRAMMATCH]->		disable(false);
+	m_imageFilterType[THRESHOLD]			->	disable(false);
+	m_imageFilterType[CONTRAST]				->	disable(false);
+	m_imageFilterType[QUANTIZATION]			->	disable(false);
+	m_imageFilterType[HISTOGRAMSTRETCH]		->	disable(false);
+	m_imageFilterType[HISTOGRAMEEQUALIZE]	->	disable(false);
+	m_imageFilterType[HISTOGRAMMATCH]		->	disable(false);
+	m_imageFilterType[BLUR]					->	disable(false);
+	m_imageFilterType[SHARPEN]				->	disable(false);
+
 
 
 }

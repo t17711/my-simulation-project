@@ -1,12 +1,12 @@
 #ifndef HISTOGRAMEEQUALIZE_H
 #define HISTOGRAMEEQUALIZE_H
 
-#include "ImageFilter.h"
+#include "HistogramMatch.h"
 
-class HistogramEqualize :public ImageFilter
+
+class HistogramEqualize :public HistogramMatch
 {
 	Q_OBJECT
-
 public:
 						HistogramEqualize	(QWidget *parent = 0);
 	QGroupBox*			controlPanel		();						// create control panel

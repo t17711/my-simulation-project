@@ -37,8 +37,7 @@ HistogramStretch::reset(){
 }
 
 QGroupBox*
-HistogramStretch::controlPanel()
-{
+HistogramStretch::controlPanel(){
 	// init group box
 	m_ctrlGrp = new QGroupBox("Histogram Stretching");
 	// create minimum slider
@@ -56,7 +55,7 @@ HistogramStretch::controlPanel()
 	m_spinBoxMin->	setRange(0, MXGRAY - 5);
 	m_spinBoxMin->	setValue(0);
 
-	m_CheckBoxAutoMin = new QCheckBox(tr("auto"),m_ctrlGrp);
+	m_CheckBoxAutoMin = new QCheckBox(tr("min auto"),m_ctrlGrp);
 
 
 	// for maximum
@@ -72,7 +71,7 @@ HistogramStretch::controlPanel()
 	m_spinBoxMax->	setRange(5, MXGRAY);
 	m_spinBoxMax->	setValue(MXGRAY);
 
-	m_CheckBoxAutoMax = new QCheckBox(tr("auto"), m_ctrlGrp);
+	m_CheckBoxAutoMax = new QCheckBox(tr("max auto"), m_ctrlGrp);
 
 	// layout
 	QGridLayout *layout		= new QGridLayout;
@@ -275,7 +274,7 @@ HistogramStretch::histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2){
 	int diff = max - min;
 	// get look up table
 	for (int i = 0; i < MXGRAY; ++i)
-		lut[i] = CLIP((MXGRAY*(i - min) / diff), 0, MXGRAY);
+		lut[i] = CLIP(((MXGRAY-1)*(i - min) / diff), 0, (MXGRAY-1));
 	// create image
 
 	int type;
@@ -293,6 +292,9 @@ HistogramStretch::disable(bool flag){
 	m_sliderMin->			blockSignals(true);
 	m_sliderMax->			blockSignals(true);
 	m_CheckBoxAutoMin->		blockSignals(true);
+
+	m_sliderMin->			setDisabled(flag);
+	m_sliderMax->			setDisabled(flag);
 
 	m_spinBoxMin->			setDisabled(flag);
 	m_spinBoxMax->			setDisabled(flag);

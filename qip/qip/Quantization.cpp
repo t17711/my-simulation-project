@@ -33,13 +33,13 @@ Quantization::controlPanel(){
 	m_slider = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_slider->setTickPosition(QSlider::TicksBelow);
 	m_slider->setTickInterval(10);
-	m_slider->setRange(1, MXGRAY-1); // range of slider 1 to 8 for quantization
-	m_slider->setValue(MXGRAY-1);
+	m_slider->setRange(1, MXGRAY); // range of slider 1 to 8 for quantization
+	m_slider->setValue(MXGRAY);
 
 	// spinbox
 	m_spinBox = new QSpinBox(m_ctrlGrp);
-	m_spinBox->setRange(1, MXGRAY-1);
-	m_spinBox->setValue(MXGRAY-1);
+	m_spinBox->setRange(1, MXGRAY);
+	m_spinBox->setValue(MXGRAY);
 
 	// checkbox
 	m_checkBox = new QCheckBox(tr("Dither"),m_ctrlGrp);
@@ -97,19 +97,21 @@ Quantization::quantization(ImagePtr I1, int level, bool dither, ImagePtr I2){
 
 	int i, lut[MXGRAY];  // size 256
 	for (i = 0; i < MXGRAY; ++i) lut[i] = scale * (int)(i / scale);
+
 	int type;
 	ChannelPtr<uchar> p1, p2, endd;
 
 	if (dither){
 		int k = 0;
 		int j = 0;
+		int ttttt = 0;
 		int osc = 1;
 		for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
 			IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
 			for (endd = p1 + total; p1 < endd; p1++){
-				int ttttt = ((rand() & 0x7FFF));
-				j = ttttt/32767. * bias;
-				if (osc = 1){
+				 ttttt = ((rand() & 0x7FFF));
+				j = ttttt/32767. * bias; //bias = scale / 2;
+				if (osc == 1){
 					k = CLIP(lut[*p1] + j, 0, MXGRAY);
 					osc = -1;
 				}

@@ -215,7 +215,7 @@ HistogramMatch::HistMatch(ImagePtr I1, long double Histogram[], ImagePtr I2){
 			if (histogram_input[p] < histogram_target[p]){	
 				// if histogram output  value is less than avg then copy point
 				// but 1st check if it is reserved space
-				if (left2[*p1] != p) *p2 = p; 
+			if (left2[*p1] != p) *p2 = p; 
 				/* so check if left[*p1] is original left if it is so then check the reserved value, if
 				reserved value is 0, then move to next place */
 				else {

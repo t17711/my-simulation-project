@@ -42,6 +42,10 @@ HEADERS +=	MainWindow.h	\
 		HistogramStretch.h \
 		HistogramEqualize.h \
 		HistogramMatch.h \
+		ErrorDiffusion.h \
+		Blur.h \
+		Sharpen.h \
+		Median.h \
 
 		
 SOURCES +=	main.cpp	\ 
@@ -55,5 +59,9 @@ SOURCES +=	main.cpp	\
 		HistogramStretch.cpp \
 		HistogramEqualize.cpp \
 		HistogramMatch.cpp \
+		ErrorDiffusion.cpp \
+		Blur.cpp \
+		Sharpen.cpp \
+		Median.cpp \
 
 
