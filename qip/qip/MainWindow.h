@@ -96,8 +96,8 @@ private:
 	QAction*		m_actionHistEqualize;
 	QAction*		m_actionHistMatch;
 	QAction*		m_actionBlur;
-	//QAction*		m_actionMedian;
 	QAction*		m_actionSharpen;
+	QAction*		m_actionMedian;
 
 
 

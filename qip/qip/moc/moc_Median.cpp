@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_Median_t {
-    QByteArrayData data[1];
-    char stringdata0[7];
+    QByteArrayData data[4];
+    char stringdata0[31];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -29,10 +29,13 @@ struct qt_meta_stringdata_Median_t {
     )
 static const qt_meta_stringdata_Median_t qt_meta_stringdata_Median = {
     {
-QT_MOC_LITERAL(0, 0, 6) // "Median"
+QT_MOC_LITERAL(0, 0, 6), // "Median"
+QT_MOC_LITERAL(1, 7, 12), // "changeSlider"
+QT_MOC_LITERAL(2, 20, 0), // ""
+QT_MOC_LITERAL(3, 21, 9) // "changeAvg"
 
     },
-    "Median"
+    "Median\0changeSlider\0\0changeAvg"
 };
 #undef QT_MOC_LITERAL
 
@@ -42,22 +45,35 @@ static const uint qt_meta_data_Median[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       0,    0, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
        0,       // signalCount
 
+ // slots: name, argc, parameters, tag, flags
+       1,    1,   24,    2, 0x09 /* Protected */,
+       3,    1,   27,    2, 0x09 /* Protected */,
+
+ // slots: parameters
+    QMetaType::Void, QMetaType::Int,    2,
+    QMetaType::Void, QMetaType::Int,    2,
+
        0        // eod
 };
 
 void Median::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    Q_UNUSED(_o);
-    Q_UNUSED(_id);
-    Q_UNUSED(_c);
-    Q_UNUSED(_a);
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Median *_t = static_cast<Median *>(_o);
+        Q_UNUSED(_t)
+        switch (_id) {
+        case 0: _t->changeSlider((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: _t->changeAvg((*reinterpret_cast< int(*)>(_a[1]))); break;
+        default: ;
+        }
+    }
 }
 
 const QMetaObject Median::staticMetaObject = {
@@ -84,6 +100,15 @@ int Median::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     _id = ImageFilter::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 2;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 2)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 2;
+    }
     return _id;
 }
 QT_END_MOC_NAMESPACE

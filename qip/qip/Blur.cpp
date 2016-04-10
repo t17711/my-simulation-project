@@ -107,11 +107,10 @@ Blur::reset(){
 
 }
 
-
 void 
 Blur::changeXsz(int xsz){
 	if (xsz % 2 == 0 && xsz > 0){ // maintain odd
-		if (xsz > m_sliderXsz->value())	xsz++; // if increasing increase
+		if (xsz > m_sliderXsz->value() || xsz > m_spinBoxXsz->value())	xsz++; // if increasing increase
 		else
 			xsz--;
 	}
@@ -134,7 +133,7 @@ Blur::changeXsz(int xsz){
 void
 Blur::changeYsz(int ysz){
 	if (ysz % 2 == 0 && ysz > 0){ // maintain odd
-		if (ysz > m_sliderYsz->value())	ysz++; // if increasing increase
+		if (ysz > m_sliderYsz->value() || ysz > m_spinBoxYsz->value())	ysz++; // if increasing increase
 		else{
 			ysz--;
 		}

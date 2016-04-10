@@ -18,10 +18,11 @@
 #include "HistogramStretch.h"
 #include "Blur.h"
 #include "Sharpen.h"
+#include "Median.h"
 
 enum { DUMMY, THRESHOLD, CONTRAST, QUANTIZATION,
 	HISTOGRAMSTRETCH, HISTOGRAMEEQUALIZE, HISTOGRAMMATCH, 
-	BLUR, SHARPEN};
+	BLUR, SHARPEN, MEDIAN};
 enum { RGB, R, G, B, GRAY };
 
 QString GroupBoxStyle = "QGroupBox {\
@@ -126,6 +127,9 @@ MainWindow::createActions()
 	m_actionSharpen->setShortcut(tr("Ctrl + h"));
 	m_actionSharpen->setData(SHARPEN);
 
+	m_actionMedian = new QAction("Median", this);
+	m_actionMedian->setData(MEDIAN);
+
 	// one signal-slot connection for all actions;
 	// execute() will resolve which action was triggered
 	connect(menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(execute(QAction*)));
@@ -163,6 +167,7 @@ MainWindow::createMenus()
 	m_menuNeighOpts = menuBar()->addMenu("&Neighborhood opts");
 	m_menuNeighOpts	->addAction(m_actionBlur);
 	m_menuNeighOpts	->addAction(m_actionSharpen);
+	m_menuNeighOpts	->addAction(m_actionMedian);
 
 
 }
@@ -218,6 +223,7 @@ MainWindow::createGroupPanel()
 	// neighborhood operations
 	m_imageFilterType[BLUR]					= new Blur;
 	m_imageFilterType[SHARPEN]				= new Sharpen;
+	m_imageFilterType[MEDIAN]				= new Median;
 
 
 	// create a stacked widget to hold multiple control panels
@@ -234,8 +240,9 @@ MainWindow::createGroupPanel()
 	m_stackWidgetPanels->addWidget(m_imageFilterType[HISTOGRAMMATCH]	->controlPanel());
 
 	// neighbor hood
-	m_stackWidgetPanels->addWidget(m_imageFilterType[BLUR]->controlPanel());
-	m_stackWidgetPanels->addWidget(m_imageFilterType[SHARPEN]->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[BLUR]				->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[SHARPEN]			->controlPanel());
+	m_stackWidgetPanels->addWidget(m_imageFilterType[MEDIAN]			->controlPanel());
 
 
 	// display blank dummmy panel initially
@@ -776,6 +783,7 @@ void MainWindow::setToolbarIcons(){
 
 	m_toolBar->		addAction(m_actionBlur);
 	m_toolBar->		addAction(m_actionSharpen);
+	m_toolBar->		addAction(m_actionMedian);
 
 
 	m_toolBar->		setIconSize(QSize(50, 50));
@@ -833,7 +841,7 @@ void MainWindow::enableActions(){
 	m_imageFilterType[HISTOGRAMMATCH]		->	disable(false);
 	m_imageFilterType[BLUR]					->	disable(false);
 	m_imageFilterType[SHARPEN]				->	disable(false);
-
+	m_imageFilterType[MEDIAN]				->	disable(false);
 
 
 }
