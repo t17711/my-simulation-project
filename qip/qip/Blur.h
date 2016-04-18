@@ -21,12 +21,14 @@ protected:
 	QSlider		*m_sliderYsz;		// y size  slider
 	QSpinBox	*m_spinBoxXsz;
 	QSpinBox	*m_spinBoxYsz;
+	QCheckBox	*m_coupleSZ;
 
 	void		getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2);
 	void		getBlur_1D(IP::ChannelPtr<uchar>  p1, int width, int steps, int size, IP::ChannelPtr<uchar> p2);
 protected slots:
 	void changeXsz(int);
 	void changeYsz(int);
+	void changeCouple(int);
 
 };
 

@@ -40,7 +40,8 @@ Blur::controlPanel(){			// create control panel
 	m_spinBoxYsz->setRange(1, maxbuffer);
 	m_spinBoxYsz->setValue(1);
 
-
+	// couple checkbox
+	m_coupleSZ = new QCheckBox("Combine x y values", m_ctrlGrp);
 	// layout
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(labelXsz, 0, 0);
@@ -51,11 +52,15 @@ Blur::controlPanel(){			// create control panel
 	layout->addWidget(m_sliderYsz, 3, 0);
 	layout->addWidget(m_spinBoxYsz, 3, 1);
 
+	layout->addWidget(m_coupleSZ);
+
 	connect(m_sliderXsz, SIGNAL(valueChanged(int)), this, SLOT(changeXsz(int)));
 	connect(m_spinBoxXsz, SIGNAL(valueChanged(int)), this, SLOT(changeXsz(int)));
+
 	connect(m_sliderYsz, SIGNAL(valueChanged(int)), this, SLOT(changeYsz(int)));
 	connect(m_spinBoxYsz, SIGNAL(valueChanged(int)), this, SLOT(changeYsz(int)));
 
+	connect(m_coupleSZ, SIGNAL(stateChanged(int)), this, SLOT(changeCouple(int)));
 
 	m_ctrlGrp->setLayout(layout);
 	// connect signal here
@@ -71,6 +76,7 @@ Blur::disable(bool flag){
 	m_sliderYsz->blockSignals(true);
 	m_spinBoxXsz->blockSignals(true);
 	m_spinBoxYsz->blockSignals(true);
+	m_coupleSZ->blockSignals(true);
 
 	m_sliderXsz->setDisabled(flag);
 	m_sliderYsz->setDisabled(flag);
@@ -78,9 +84,14 @@ Blur::disable(bool flag){
 	m_spinBoxXsz->setDisabled(flag);
 	m_spinBoxYsz->setDisabled(flag);
 
+	m_coupleSZ->setDisabled(flag);
+
 	m_sliderXsz->blockSignals(false);
 	m_sliderYsz->blockSignals(false);
+	m_spinBoxXsz->blockSignals(false);
+	m_spinBoxYsz->blockSignals(false);
 
+	m_coupleSZ->blockSignals(false);
 }
 
 void
@@ -92,11 +103,15 @@ Blur::reset(){
 	m_sliderXsz->blockSignals(true);
 	m_spinBoxXsz->blockSignals(true);
 
+	m_coupleSZ->blockSignals(true);
+
 	// reset values
-	m_sliderXsz->setValue(0);		 // start is 0
-	m_spinBoxXsz->setValue(0);
-	m_sliderYsz->setValue(0);	 // start is 0
-	m_spinBoxYsz->setValue(0);	 // start is 0
+	m_sliderXsz->setValue(1);		 // start is 0
+	m_spinBoxXsz->setValue(2);
+	m_sliderYsz->setValue(1);	 // start is 0
+	m_spinBoxYsz->setValue(1);	 // start is 0
+
+	m_coupleSZ->setChecked(false);
 
 	// enable signals
 	m_sliderYsz->blockSignals(false);
@@ -104,15 +119,26 @@ Blur::reset(){
 
 	m_sliderXsz->blockSignals(false);
 	m_spinBoxXsz->blockSignals(false);
-
+	m_coupleSZ->blockSignals(false);
 }
 
 void 
 Blur::changeXsz(int xsz){
 	if (xsz % 2 == 0 && xsz > 0){ // maintain odd
-		if (xsz > m_sliderXsz->value() || xsz > m_spinBoxXsz->value())	xsz++; // if increasing increase
+		if (xsz >= m_sliderXsz->value() || xsz >= m_spinBoxXsz->value())	xsz++; // if increasing increase
 		else
 			xsz--;
+	}
+	// if checked change all value
+	if (m_coupleSZ->isChecked()){
+		m_sliderYsz->blockSignals(true);
+		m_spinBoxYsz->blockSignals(true);
+
+		m_sliderYsz->setValue(xsz);
+		m_spinBoxYsz->setValue(xsz);
+
+		m_sliderYsz->blockSignals(false);
+		m_spinBoxYsz->blockSignals(false);
 	}
 	m_sliderXsz->blockSignals(true);
 	m_spinBoxXsz->blockSignals(true);
@@ -133,12 +159,22 @@ Blur::changeXsz(int xsz){
 void
 Blur::changeYsz(int ysz){
 	if (ysz % 2 == 0 && ysz > 0){ // maintain odd
-		if (ysz > m_sliderYsz->value() || ysz > m_spinBoxYsz->value())	ysz++; // if increasing increase
+		if (ysz >= m_sliderYsz->value() || ysz >= m_spinBoxYsz->value())	ysz++; // if increasing increase
 		else{
 			ysz--;
 		}
 	}
+	// check if coupled
+	if (m_coupleSZ->isChecked()){
+		m_sliderXsz->blockSignals(true);
+		m_spinBoxXsz->blockSignals(true);
 
+		m_sliderXsz->setValue(ysz);
+		m_spinBoxXsz->setValue(ysz);
+
+		m_sliderXsz->blockSignals(false);
+		m_spinBoxXsz->blockSignals(false);
+	}
 	m_sliderYsz->blockSignals(true);
 	m_spinBoxYsz->blockSignals(true);
 
@@ -155,6 +191,42 @@ Blur::changeYsz(int ysz){
 	g_mainWindowP->displayOut();
 }
 
+void 
+Blur::changeCouple(int){
+	if (m_coupleSZ->isChecked()){
+		int val;
+
+		// use smaller value
+		val = (m_sliderXsz->value() < m_sliderYsz->value()) ? m_sliderXsz->value() : m_sliderYsz->value();
+
+		m_sliderYsz->blockSignals(true);
+		m_spinBoxYsz->blockSignals(true);
+
+		m_sliderYsz->setValue(val);
+		m_spinBoxYsz->setValue(val);
+
+		m_sliderYsz->blockSignals(false);
+		m_spinBoxYsz->blockSignals(false);
+
+		m_sliderXsz->blockSignals(true);
+		m_spinBoxXsz->blockSignals(true);
+
+		m_sliderXsz->setValue(val);
+		m_spinBoxXsz->setValue(val);
+
+		m_sliderXsz->blockSignals(false);
+		m_spinBoxXsz->blockSignals(false);
+		// apply filter to source image; save result in destination image
+		applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+
+		// display output
+		g_mainWindowP->displayOut();
+	}
+	else
+		// if unchecked no need to apply filter
+		return;
+}
+
 bool
 Blur::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
@@ -165,6 +237,7 @@ Blur::applyFilter(ImagePtr I1, ImagePtr I2){
 
 	return 1;
 }
+
 void
 Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 	ImagePtr temp;
@@ -211,41 +284,60 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 
 void
 Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::ChannelPtr<uchar> p2){
-	int buffer_size = width + size - 1; // so buffer size is width plus size of neighborhood - 1 
+	size_t buffer_size = width + size - 1; // so buffer size is width plus size of neighborhood - 1 
 	int extra = (size-1) / 2;
 	if (size==1) {
 		for (int i = 0; i < width; i++, p2 += steps, p1 += steps) {
 			*p2 = *p1;
 		}
 		return;
-	}
-	std::vector<uint16_t> buffer; // save max row size
-	buffer.reserve(buffer_size);
+	} 
+	
+	// save max row size
+	uint16_t * buffer;
+
+	// allocate memory
+	buffer = (uint16_t *)malloc(sizeof(uint16_t*)*buffer_size);
+	if (buffer == NULL) exit(0);
 	
 	// add val to front buffer, it is low(half (neighborehood size/2))
-	for (int i = 0; i < extra; ++i) 	buffer.push_back(*p1);
+	int i = 0;
+	for (; i < extra; ++i) 	buffer[i]=(*p1);
+
 	// copy row, step point by steps
-	for (int i = 0; i < width; ++i) {
-		buffer.push_back(*p1);
+	width += i;
+	for (; i < width; ++i) {
+		buffer[i] = (*p1);
 		p1 += steps;
 	}
 
 	p1 -= steps; // go back to pointer end
+
 	// add val to end
-	for (int i = 0; i < extra; ++i) buffer.push_back(*p1);
+	extra += i;
+	for (; i < extra; ++i) buffer[i]=(*p1);
 
 	// now find sum
 	int sum = 0;
+
 	// do front 1st
-	int i = 0;
-	for (; i < size; i++) sum += buffer[i];
+	i = 0;
+	for (; i < size; i++) 
+		sum += buffer[i];
 	*p2= sum / size;
+
+	// go to next step
 	p2 += steps;
+
 	//goes from i+size to buffer end, deletes left adds new
+	// here add incoming val subtract outgoing value and update output pointer
+	// do for whole row i.e. input image + padd element
 	for (; i < buffer_size; i++, p2 += steps){
 		sum += (buffer[i] -buffer[i - size]); // delete left end item  add right end of neighborhood
+	
 		// put in output
 		*p2 = sum / size;
 	}
+	free(buffer);
 
 }

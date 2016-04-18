@@ -16,9 +16,9 @@ public:
 		void				reset();		// reset parameters
 		bool				applyFilter(ImagePtr, ImagePtr);// apply filter to input to init output
 		void				disable(bool);
-		uchar				median(std::vector<uchar> sum, int avg);
+		uchar				median(uchar* sum, int avg, int size);
 		void				get_med(ChannelPtr<uchar> p2, 
-									std::deque <std::vector<uchar> > buffer,
+									std::deque < uchar* > buffer,
 									int sz ,int w, int avg);
 
 protected:
@@ -35,7 +35,7 @@ private:
 	QSlider			*m_sliderAvg;		// x size slider
 	QSpinBox		*m_spinBoxAvg;
 
-	std::vector<uchar>			getRowBuff(ChannelPtr<uchar> p1, int width, int pad);
+	uchar* 		getRowBuff(ChannelPtr<uchar> p1, int width, int pad);
 };
 
 #endif

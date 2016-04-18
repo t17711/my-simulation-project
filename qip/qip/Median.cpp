@@ -17,13 +17,13 @@ Median::controlPanel(){		// create control panel
 
 	m_sliderSz = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderSz->setTickPosition(QSlider::TicksBelow);
-	m_sliderSz->setTickInterval(10);
-	m_sliderSz->setRange(1, MXGRAY); // range of slider - 256 to 256
+	m_sliderSz->setTickInterval(2);
+	m_sliderSz->setRange(1, 11); // range of slider - 256 to 256
 	m_sliderSz->setValue(1);
 
 	// spinbox
 	m_spinBoxSz = new QSpinBox(m_ctrlGrp);
-	m_spinBoxSz->setRange(1, MXGRAY);
+	m_spinBoxSz->setRange(1, 11);
 	m_spinBoxSz->setValue(1);
 
 	// avg	
@@ -149,17 +149,22 @@ Median::changeAvg(int sz){
 
 }
 
-std::vector<uchar>
+uchar*
 Median::getRowBuff(ChannelPtr<uchar> p1, int width, int pad){
-	std::vector<uchar> temp;
-	for (int i = 0; i < pad; ++i){
-		temp.push_back(*p1);
+	uchar* temp = (uchar*)malloc(sizeof(uchar*)*(width + 2 * pad));
+	if (temp == NULL) exit(1);
+
+	int i = 0;
+	for (; i < pad; ++i){
+		temp[i]=*p1;
 	}
-	for (int i = 0; i < width; ++i){
-		temp.push_back(*p1++);
+	width += i;
+	for (; i < width; ++i){
+		temp[i]=(*p1++);
 	}
-	for (int i = 0; i < pad; ++i){
-		temp.push_back(*p1);
+	pad += i;
+	for (; i < pad; ++i){
+		temp[i]=(*p1);
 	}
 
 	return temp;
@@ -176,7 +181,7 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 	int type;
 	ChannelPtr<uchar> p1, p2, endd;
 
-	std::deque<std::vector<uchar> > buffer;
+	std::deque<uchar*> buffer;
 
 	int pad = (sz) / 2;
 
@@ -221,14 +226,13 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 
 }
 uchar
-Median::median(std::vector<uchar> sum, int avg){
-	int size = sum.size();
+Median::median(uchar*  sum, int avg, int size){
 	int med=0;
 
 //	avg = avg * 2 + 1; // gets nearest avg items
 	if (avg > size) avg = size;
 
-	std::sort(sum.begin(), sum.end());
+	std::sort(sum, sum+size);
 
 	// get # of median to get
 	for (int i = (size/2)-avg , end = i+ 2*avg+1; i != end; ++i){
@@ -240,10 +244,11 @@ Median::median(std::vector<uchar> sum, int avg){
 
 void
 Median::get_med(ChannelPtr<uchar> p2,
-				std::deque <std::vector<uchar> > buffer,
+				std::deque <uchar* > buffer,
 				int sz, int w , int avg){
-
-		std::vector<uchar> sum(sz*sz);
+	int size = 0;
+		uchar* sum;
+		sum = (uchar*)malloc(sz*sz);
 		size_t si = buffer.size();
 		// sum each neighbor
 		for (int i = 0; i < w; i++){
@@ -253,13 +258,14 @@ Median::get_med(ChannelPtr<uchar> p2,
 				int nxt = i + sz;
 			
 				for (; k < nxt; k++){
-					sum.push_back(buffer.at(j)[k]);
+					sum[size]=(buffer.at(j)[k]);
+					size++;
 				}
 				
 			}
-			int m = CLIP(median(sum, avg), 0, MXGRAY);
+			int m = CLIP(median(sum, avg, size), 0, MXGRAY);
 			*p2 = m;
 			p2++;
-			sum.clear();
+			size = 0;
 		}
 }
