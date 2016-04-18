@@ -257,6 +257,8 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++){
 
 		IP_getChannel(temp, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+		
+		// for row
 		for (int i = 0; i < h;++i){ // go from top row to bottom
 			// now get 1d blur of pixel width w, step 1, and neighborhood xsz
 			getBlur_1D(p1, w, 1, xsz, p2);
@@ -270,6 +272,7 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 		// get pointer for output
 		IP_getChannel(I2, ch, p3, type); // gets channle 0 1 or 2 (r, g ,b) array 
 
+		// for column
 		for (int i = 0; i < w; ++i){ // go from 1st col to last
 		// now get 1d blur of pixel width h, step w, and neighborhood ysz
 			getBlur_1D(p2, h, w, ysz, p3); 
@@ -304,7 +307,7 @@ Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::C
 	int i = 0;
 	for (; i < extra; ++i) 	buffer[i]=(*p1);
 
-	// copy row, step point by steps
+	// copy row or column, step point by steps
 	width += i;
 	for (; i < width; ++i) {
 		buffer[i] = (*p1);

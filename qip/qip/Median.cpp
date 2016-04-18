@@ -204,7 +204,8 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 	//	int end_l = total - (sz - pad)*w;
 		for (; p1 < endd; p1 += w, p2 += w) {
 			// get median and put it on p2
-			get_med(p2, buffer, sz, w, avg);		
+			get_med(p2, buffer, sz, w, avg);	
+			free(buffer.front());
 			buffer.pop_front();
 			buffer.push_back(getRowBuff(p1, w, pad));
 		}
@@ -218,28 +219,57 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 		for (int i = 0; i < pad; ++i){
 			get_med(p2, buffer, sz , w , avg);
 			p2+=w;
+			free(buffer.front());
 			buffer.pop_front();
 			buffer.push_back(getRowBuff(p1, w, pad));		
 		}
 
 	}
+	for (auto i : buffer){
+		free(i);
+	}
 
 }
+
 uchar
 Median::median(uchar*  sum, int avg, int size){
 	int med=0;
 
-//	avg = avg * 2 + 1; // gets nearest avg items
 	if (avg > size) avg = size;
 
-	std::sort(sum, sum+size);
+	//std::sort(sum, sum+size);
+
+	// counting sort
+	int count[256] = {0}; //Can store the count of 255 positive numbers
+
+	// get hist
+	for (int i = 0; i<size; i++)
+		count[sum[i]]++;
+
+	// get cummulative hist
+	for (int i = 1; i<256; i++)
+		count[i] += count[i - 1];
+
+	// sorted array
+	int *output = (int*)malloc(sizeof(int*)*size);
+
+	for (int i = 0; i<size; i++)
+	{
+		int ind = count[sum[i]] - 1;
+		*(output + ind) = sum[i];
+		count[sum[i]]--;
+	}
+	
 
 	// get # of median to get
 	for (int i = (size/2)-avg , end = i+ 2*avg+1; i != end; ++i){
-		med += sum[i];
+		med += output[i];
 	}
-	int o = med / (2 * avg + 1);
-	return o;
+
+
+	free(output);
+
+	return med / (2 * avg + 1);
 }
 
 void
@@ -263,7 +293,7 @@ Median::get_med(ChannelPtr<uchar> p2,
 				}
 				
 			}
-			int m = CLIP(median(sum, avg, size), 0, MXGRAY);
+			int m = median(sum, avg, size);
 			*p2 = m;
 			p2++;
 			size = 0;
