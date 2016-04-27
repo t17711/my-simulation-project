@@ -28,7 +28,7 @@ enum { RGB, R, G, B, GRAY };
 QString GroupBoxStyle = "QGroupBox {\
 									border: 4px solid blue;	\
 									border-radius: 9px;	\
-									background: yellow; \
+									background: light grey; \
 									margin-top: 0.5em;}"; // sets main widget groupboxe's style
 
 MainWindow *g_mainWindowP = NULL;

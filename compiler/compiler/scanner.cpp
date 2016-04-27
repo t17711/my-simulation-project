@@ -71,10 +71,8 @@ public:
 
 	void print(){
 		int t = 0;
-		token_name tm = token_list[t]->name;
-		while (tm != TK_EOF) {
+		while (token_list[t]->name != TK_EOF) {
 			token_list[t]->print();
-			tm = token_list[t]->name;
 			t++;
 		}
 
@@ -123,7 +121,7 @@ public:
 			i++;
 			goto GET_TOKEN;
 		}
-		else if ('A' <= curr && curr <= 'z'){
+		else if ('A' <= curr && curr <= 'Z'){
 			identifier();
 			return;
 		}
@@ -131,7 +129,7 @@ public:
 			digit_token();
 			return;
 		}
-		else if (curr > 32 && !('A' <= curr && curr <= 'z') && !('0' <= curr && curr <= '9')){
+		else if (curr > 32 && !('A' <= curr && curr <= 'Z') && !('0' <= curr && curr <= '9')){
 			operator_token();
 			return;
 		}
@@ -140,7 +138,6 @@ public:
 
 	void identifier()
 	{
-		//printf("identifier");
 		// i made it so that we enter this function if there is valid for identifier
 	
 		char curr;
@@ -155,21 +152,20 @@ public:
 			return;
 		}
 
-		else if(curr <= 32){
-					// if space after an char then we say the value is identifier
+		else if(curr <= ' '){
+		    
+			// if space after an char then we say the value is identifier
 			
 			check_keyword(token_list[j]);
-			i++;
 			j++;
 			get_token();
 			return;
 		}
 
-		else if // valif names are alphabet nmbers and underscore, only alphabet starts
-			(('A' <= curr && curr <= 'Z') ||
-			curr == '_' ||
-			(curr >= '0' && curr <= '9'))
-		{
+		else if (('A' <= curr && curr <= 'Z') ||
+					curr == '_' ||
+					(curr >= '0' && curr <= '9')){
+			// valif names are alphabet nmbers and underscore, only alphabet starts
 			token_list[j]->id += curr;
 			i++;
 			goto IDENTIFIER_LOOKUP;
@@ -179,7 +175,6 @@ public:
 		{
 			check_keyword(token_list[j]);
 			j++;
-			i++;
 			get_token();
 			return;
 		}

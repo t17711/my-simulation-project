@@ -12,19 +12,36 @@ Median::controlPanel(){		// create control panel
 
 	m_ctrlGrp = new QGroupBox("Median");
 
-	QLabel *labelS = new QLabel;
-	labelS->setText(QString("Window Size"));
+	QLabel *labelSx = new QLabel;
+	labelSx->setText(QString("Column Size"));
 
-	m_sliderSz = new QSlider(Qt::Horizontal, m_ctrlGrp);
-	m_sliderSz->setTickPosition(QSlider::TicksBelow);
-	m_sliderSz->setTickInterval(2);
-	m_sliderSz->setRange(1, 11); // range of slider - 256 to 256
-	m_sliderSz->setValue(1);
+	QLabel *labelSy = new QLabel;
+	labelSy->setText(QString("Row Size"));
+
+	// x neighborhood
+	m_sliderXsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
+	m_sliderXsz->setTickPosition(QSlider::TicksBelow);
+	m_sliderXsz->setTickInterval(2);
+	m_sliderXsz->setRange(1, 11); // range of slider - 256 to 256
+	m_sliderXsz->setValue(1);
 
 	// spinbox
-	m_spinBoxSz = new QSpinBox(m_ctrlGrp);
-	m_spinBoxSz->setRange(1, 11);
-	m_spinBoxSz->setValue(1);
+	m_spinBoxXsz = new QSpinBox(m_ctrlGrp);
+	m_spinBoxXsz->setRange(1, 11);
+
+	m_spinBoxXsz->setValue(1);
+
+	// y neighborhood
+	m_sliderYsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
+	m_sliderYsz->setTickPosition(QSlider::TicksBelow);
+	m_sliderYsz->setTickInterval(2);
+	m_sliderYsz->setRange(1, 11); // range of slider - 256 to 256
+	m_sliderYsz->setValue(1);
+
+	// spinbox
+	m_spinBoxYsz = new QSpinBox(m_ctrlGrp);
+	m_spinBoxYsz->setRange(1, 11);
+	m_spinBoxYsz->setValue(1);
 
 	// avg	
 	QLabel *labelA = new QLabel;
@@ -32,26 +49,41 @@ Median::controlPanel(){		// create control panel
 
 	m_sliderAvg = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderAvg->setTickPosition(QSlider::TicksBelow);
-	m_sliderAvg->setTickInterval(10);
-	m_sliderAvg->setRange(0, MXGRAY - 1); // range of slider - 256 to 256
+	m_sliderAvg->setTickInterval(1);
+	m_sliderAvg->setRange(0, 100); // range of slider - 256 to 256
 	m_sliderAvg->setValue(0);
+	
 	// spinbox
 	m_spinBoxAvg = new QSpinBox(m_ctrlGrp);
 	m_spinBoxAvg->setRange(0, MXGRAY-1); // range of slider - 256 to 256
 	m_spinBoxAvg->setValue(0);
 
-	connect(m_spinBoxSz, SIGNAL(valueChanged(int)), this, SLOT(changeSlider(int)));
-	connect(m_sliderSz, SIGNAL(valueChanged(int)), this, SLOT(changeSlider(int)));
+	// comboine
+	m_combinexy = new QCheckBox("Combine row and column window", m_ctrlGrp);
+
+	// connect signal
+	connect(m_sliderXsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderX(int)));
+	connect(m_spinBoxXsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderX(int)));
+	
+	connect(m_sliderYsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderY(int)));
+	connect(m_spinBoxYsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderY(int)));
 
 	connect(m_sliderAvg, SIGNAL(valueChanged(int)), this, SLOT(changeAvg(int)));
 	connect(m_spinBoxAvg, SIGNAL(valueChanged(int)), this, SLOT(changeAvg(int)));
-	
-	
+
+	connect(m_combinexy, SIGNAL(stateChanged(int)), this, SLOT(combine(int)));
+
 	QGridLayout *layout = new QGridLayout;
 
-	layout->addWidget(labelS, 1, 0);
-	layout->addWidget(m_sliderSz, 1, 1);
-	layout->addWidget(m_spinBoxSz, 1, 2);
+	layout->addWidget(m_combinexy, 3, 0,1,3); // extend to 3 columns right
+
+	layout->addWidget(labelSx, 1, 0);
+	layout->addWidget(m_sliderXsz, 1, 1);
+	layout->addWidget(m_spinBoxXsz, 1, 2);
+
+	layout->addWidget(labelSy, 2, 0);
+	layout->addWidget(m_sliderYsz, 2, 1);
+	layout->addWidget(m_spinBoxYsz, 2, 2);
 
 	layout->addWidget(labelA, 0, 0);
 	layout->addWidget(m_sliderAvg, 0, 1);
@@ -67,17 +99,23 @@ Median::controlPanel(){		// create control panel
 bool
 Median::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
-	int sz= m_sliderSz->value();
+	int xsz= m_sliderXsz->value();
+	int ysz = m_sliderYsz->value();
+
 	int avg = m_sliderAvg->value();
 
-	getMedian(I1,sz, avg, I2);
+	getMedian(I1,xsz,ysz, avg, I2);
 	return 1;
 }
 
 void
 Median::disable(bool flag){
-	m_sliderSz->setDisabled(flag);
-	m_spinBoxSz->setDisabled(flag);
+	m_sliderXsz->setDisabled(flag);
+	m_spinBoxXsz->setDisabled(flag);
+
+	m_sliderYsz->setDisabled(flag);
+	m_spinBoxYsz->setDisabled(flag);
+
 	m_sliderAvg->setDisabled(flag);
 	m_spinBoxAvg->setDisabled(flag);
 
@@ -85,39 +123,66 @@ Median::disable(bool flag){
 
 void
 Median::reset(){
-	m_sliderSz->blockSignals(true);
-	m_spinBoxSz->blockSignals(true);
+	m_sliderXsz->blockSignals(true);
+	m_spinBoxXsz->blockSignals(true);
+	m_sliderYsz->blockSignals(true);
+	m_spinBoxYsz->blockSignals(true);
+	m_combinexy->blockSignals(true);
+
 	m_sliderAvg->blockSignals(true);
 	m_spinBoxAvg->blockSignals(true);
 
-	m_sliderSz->setValue(1);
-	m_spinBoxSz->setValue(1);
+	m_sliderYsz->setValue(1);
+	m_spinBoxYsz->setValue(1);
+
+	m_sliderXsz->setValue(1);
+	m_spinBoxXsz->setValue(1);
+
 	m_sliderAvg->setValue(0);
 	m_spinBoxAvg->setValue(0);
 
-	m_sliderSz->blockSignals(false);
-	m_spinBoxSz->blockSignals(false);
+	m_combinexy->setChecked(false);
+
+	m_sliderXsz->blockSignals(false);
+	m_spinBoxXsz->blockSignals(false);
+
+	m_sliderYsz->blockSignals(false);
+	m_spinBoxYsz->blockSignals(false);
 
 	m_sliderAvg->blockSignals(false);
 	m_spinBoxAvg->blockSignals(false);
+
+	m_combinexy->blockSignals(false);
+
 }
 
 void
-Median::changeSlider(int sz){
+Median::changeSliderX(int sz){
 	if (sz % 2 == 0 && sz > 0){ // maintain odd
-		if (sz > m_sliderSz->value() || sz > m_spinBoxSz->value())	sz++; // if increasing increase
+		if (sz > m_sliderXsz->value() || sz > m_spinBoxXsz->value())	sz++; // if increasing increase
 		else{
 			sz--;
 		}
 	}
-	m_sliderSz->blockSignals(true);
-	m_spinBoxSz->blockSignals(true);
+	// if checked change all value
+	if (m_combinexy->isChecked()){
+		m_sliderYsz->blockSignals(true);
+		m_spinBoxYsz->blockSignals(true);
 
-	m_sliderSz->setValue(sz);
-	m_spinBoxSz->setValue(sz);
+		m_sliderYsz->setValue(sz);
+		m_spinBoxYsz->setValue(sz);
 
-	m_sliderSz->blockSignals(false);
-	m_spinBoxSz->blockSignals(false);
+		m_sliderYsz->blockSignals(false);
+		m_spinBoxYsz->blockSignals(false);
+	}
+	m_sliderXsz->blockSignals(true);
+	m_spinBoxXsz->blockSignals(true);
+
+	m_sliderXsz->setValue(sz);
+	m_spinBoxXsz->setValue(sz);
+
+	m_sliderXsz->blockSignals(false);
+	m_spinBoxXsz->blockSignals(false);
 
 
 	// apply filter to source image; save result in destination image
@@ -128,6 +193,78 @@ Median::changeSlider(int sz){
 
 }
 
+void
+Median::changeSliderY(int ysz){
+	if (ysz % 2 == 0 && ysz > 0){ // maintain odd
+		if (ysz > m_sliderYsz->value() || ysz > m_spinBoxYsz->value())	ysz++; // if increasing increase
+		else{
+			ysz--;
+		}
+	}
+	// check if coupled
+	if (m_combinexy->isChecked()){
+		m_sliderXsz->blockSignals(true);
+		m_spinBoxXsz->blockSignals(true);
+
+		m_sliderXsz->setValue(ysz);
+		m_spinBoxXsz->setValue(ysz);
+
+		m_sliderXsz->blockSignals(false);
+		m_spinBoxXsz->blockSignals(false);
+	}
+	m_sliderYsz->blockSignals(true);
+	m_spinBoxYsz->blockSignals(true);
+
+	m_sliderYsz->setValue(ysz);
+	m_spinBoxYsz->setValue(ysz);
+
+	m_sliderYsz->blockSignals(false);
+	m_spinBoxYsz->blockSignals(false);
+
+
+	// apply filter to source image; save result in destination image
+	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+
+	// display output
+	g_mainWindowP->displayOut();
+
+}
+
+void 
+Median::combine(int){
+	if (m_combinexy->isChecked()){
+		int val;
+
+		// use smaller value
+		val = (m_sliderXsz->value() < m_sliderYsz->value()) ? m_sliderXsz->value() : m_sliderYsz->value();
+
+		m_sliderYsz->blockSignals(true);
+		m_spinBoxYsz->blockSignals(true);
+
+		m_sliderYsz->setValue(val);
+		m_spinBoxYsz->setValue(val);
+
+		m_sliderYsz->blockSignals(false);
+		m_spinBoxYsz->blockSignals(false);
+
+		m_sliderXsz->blockSignals(true);
+		m_spinBoxXsz->blockSignals(true);
+
+		m_sliderXsz->setValue(val);
+		m_spinBoxXsz->setValue(val);
+
+		m_sliderXsz->blockSignals(false);
+		m_spinBoxXsz->blockSignals(false);
+		// apply filter to source image; save result in destination image
+		applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+
+		// display output
+		g_mainWindowP->displayOut();
+	}
+	else
+		// if unchecked no need to apply filter
+		return;
+}
 void
 Median::changeAvg(int sz){
 
@@ -171,7 +308,7 @@ Median::getRowBuff(ChannelPtr<uchar> p1, int width, int pad){
 }
 
 void
-Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
+Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 
 	int w = I1->width();  // input image
@@ -183,7 +320,8 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 
 	std::deque<uchar*> buffer;
 
-	int pad = (sz) / 2;
+	int xpad = (xsz) / 2; // padding for left and right of w
+	int ypad = (ysz) / 2; // padding for top and bottom
 
 
 	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
@@ -191,12 +329,15 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 		endd = p1 + total;
 
 		// create top pad 
-		for (int i = 0; i < pad; ++i){
-			buffer.push_back(getRowBuff(p1, w, pad));
+		for (int i = 0; i < ypad; ++i){
+			
+			//xpad is number of pixels to be added to left and right of w 
+			buffer.push_back(getRowBuff(p1, w, xpad));
 		}
 		// add 1st few rows
-		for (int i = 0; i < sz - pad; ++i){
-			buffer.push_back(getRowBuff(p1, w, pad));
+		// i used ysz since it determines neighborhood size of column
+		for (int i = 0; i < ysz - ypad; ++i){
+			buffer.push_back(getRowBuff(p1, w, xpad));
 			p1 += w;
 		}
 		// traverse 
@@ -204,10 +345,10 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 	//	int end_l = total - (sz - pad)*w;
 		for (; p1 < endd; p1 += w, p2 += w) {
 			// get median and put it on p2
-			get_med(p2, buffer, sz, w, avg);	
+			get_med(p2, buffer, xsz, ysz, w, avg);	
 			free(buffer.front());
 			buffer.pop_front();
-			buffer.push_back(getRowBuff(p1, w, pad));
+			buffer.push_back(getRowBuff(p1, w, xpad));
 		}
 		///////
 		//for end
@@ -216,12 +357,12 @@ Median::getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2){
 		// add 1st few rows
 		// add last rows
 		p1 -= w;
-		for (int i = 0; i < pad; ++i){
-			get_med(p2, buffer, sz , w , avg);
+		for (int i = 0; i < ypad; ++i){
+			get_med(p2, buffer, xsz ,ysz, w , avg);
 			p2+=w;
 			free(buffer.front());
 			buffer.pop_front();
-			buffer.push_back(getRowBuff(p1, w, pad));		
+			buffer.push_back(getRowBuff(p1, w, xpad));		
 		}
 
 	}
@@ -275,17 +416,18 @@ Median::median(uchar*  sum, int avg, int size){
 void
 Median::get_med(ChannelPtr<uchar> p2,
 				std::deque <uchar* > buffer,
-				int sz, int w , int avg){
+				int xsz,int ysz, int w , int avg){
 	int size = 0;
 		uchar* sum;
-		sum = (uchar*)malloc(sz*sz);
+		sum = (uchar*)malloc(xsz*ysz);
 		size_t si = buffer.size();
+		
 		// sum each neighbor
 		for (int i = 0; i < w; i++){
 			for (int j = 0; j < si; j++){
 				// sum each row
 				int  k = i;
-				int nxt = i + sz;
+				int nxt = i + xsz;
 			
 				for (; k < nxt; k++){
 					sum[size]=(buffer.at(j)[k]);
@@ -293,6 +435,7 @@ Median::get_med(ChannelPtr<uchar> p2,
 				}
 				
 			}
+
 			int m = median(sum, avg, size);
 			*p2 = m;
 			p2++;

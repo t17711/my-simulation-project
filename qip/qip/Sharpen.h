@@ -18,18 +18,26 @@ public:
 protected slots:
 	void changeFctrD(double);  // for slider
 	void changeFctr(int);	// for spinbox
-	void changeSlider(int);
+
+	void changeXsz(int);
+	void changeYsz(int);
+
+	void changeCouple(int);
+
 protected:
-	void		getSharp(ImagePtr I1, int sz, double fctr, ImagePtr I2);
+	void		getSharp(ImagePtr I1, int xsz,int ysz, double fctr, ImagePtr I2);
 private:
 	QGroupBox	*m_ctrlGrp;			// groupbox for panel
-	
-	QSlider		*m_sliderSz;		// x size slider
-	QSpinBox	*m_spinBoxSz;
+
+	QSlider		*m_sliderXsz;		// x size slider
+	QSlider		*m_sliderYsz;		// y size  slider
+	QSpinBox	*m_spinBoxXsz;
+	QSpinBox	*m_spinBoxYsz;
 
 	QSlider			*m_sliderFctr;		// x size slider
 	QDoubleSpinBox	*m_spinBoxFctr;
 
+	QCheckBox	*m_coupleSZ;
 
 };
 

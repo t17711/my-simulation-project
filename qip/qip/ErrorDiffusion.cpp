@@ -8,6 +8,7 @@ bool
 ErrorDiffusion::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
 	EDiffuse(I1, I2);
+	return 1;
 }
 
 QGroupBox*

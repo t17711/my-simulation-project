@@ -19,21 +19,29 @@ public:
 		uchar				median(uchar* sum, int avg, int size);
 		void				get_med(ChannelPtr<uchar> p2, 
 									std::deque < uchar* > buffer,
-									int sz ,int w, int avg);
+									int xsz ,int ysz, int w, int avg);
 
 protected:
-	void		getMedian(ImagePtr I1, int sz, int avg, ImagePtr I2);
+	void		getMedian(ImagePtr I1, int xsz,int ysz, int avg, ImagePtr I2);
 protected slots:
-	void		changeSlider(int);
+	void		changeSliderX(int);
+	void		changeSliderY(int);
+
 	void		changeAvg(int);
+	void		combine(int);
 private:
 	QGroupBox * m_ctrlGrp;
 	
-	QSlider		*m_sliderSz;		// x size slider
-	QSpinBox	*m_spinBoxSz;
+	QSlider		*m_sliderXsz;		// x size slider
+	QSpinBox	*m_spinBoxXsz;
+
+	QSlider		*m_sliderYsz;		// x size slider
+	QSpinBox	*m_spinBoxYsz;
 
 	QSlider			*m_sliderAvg;		// x size slider
 	QSpinBox		*m_spinBoxAvg;
+
+	QCheckBox		*m_combinexy;
 
 	uchar* 		getRowBuff(ChannelPtr<uchar> p1, int width, int pad);
 };
