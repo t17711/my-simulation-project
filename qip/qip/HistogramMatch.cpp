@@ -155,7 +155,7 @@ HistogramMatch::changeHistSpin(int val){
 
 // main function that matches the histogram
 void 
-HistogramMatch::HistMatch(ImagePtr I1, long double Histogram[], ImagePtr I2){
+HistogramMatch::HistMatch(ImagePtr I1, long double target_Histogram[], ImagePtr I2){
 
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 	int w = I1->width();  // input image
@@ -172,26 +172,30 @@ HistogramMatch::HistMatch(ImagePtr I1, long double Histogram[], ImagePtr I2){
 
 	double Havg; // find level to equalize
 	/* normalize h2 to conform with dimensions of I1 */
-	for (int i = Havg = 0; i<MXGRAY; i++) Havg += Histogram[i];
+	for (int i = Havg = 0; i<MXGRAY; i++) Havg += target_Histogram[i];
 
 	double scale = (double)total / Havg;
 
+	// get integer histogram to match our input image histogram to, if scale is 0 then we dont have to
 	if ((int)scale != 1){
-		for (int i = 0; i < MXGRAY; i++) histogram_target[i] = (int)round(Histogram[i] * scale);
+		for (int i = 0; i < MXGRAY; i++) histogram_target[i] = (int)round(target_Histogram[i] * scale);
 	}
 	int R = 0;
 	int Hsum = 0;
-	int temp = 0;
+	int amount_to_fill = 0;
 
 	/* normalize h2 to conform with dimensions of I1 */
 	//create temporary left to track overflow later
 	int left2[MXGRAY];
 
+	/// tis is to get left reserve for pixel frequency. so this shows how much pixel i can add in histogram
 	for (int i = 0; i<MXGRAY; i++) {
 		left[i] = R; /* left end of interval */
 		left2[i] = R; /* left end of interval */
-		temp = histogram_target[R] - Hsum;
-		reserveLeft[i] = (temp > histogram_input[i]) ? 0 : temp; // max amount of i on left
+		amount_to_fill = histogram_target[R] - Hsum;
+
+		// now reserve space for max amount of pixel i to put in leftmost space of histogram
+		reserveLeft[i] = (amount_to_fill > histogram_input[i]) ? 0 : amount_to_fill; // max amount of i on left
 
 		Hsum += histogram_input[i]; /* cum. interval value */
 		while (Hsum>histogram_target[R] && (MXGRAY - 1)>R) { /* make interval wider */

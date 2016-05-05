@@ -21,26 +21,26 @@ Median::controlPanel(){		// create control panel
 	// x neighborhood
 	m_sliderXsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderXsz->setTickPosition(QSlider::TicksBelow);
-	m_sliderXsz->setTickInterval(2);
-	m_sliderXsz->setRange(1, 11); // range of slider - 256 to 256
+	m_sliderXsz->setTickInterval(1);
+	m_sliderXsz->setRange(1, 31); // range of slider - 256 to 256
 	m_sliderXsz->setValue(1);
 
 	// spinbox
 	m_spinBoxXsz = new QSpinBox(m_ctrlGrp);
-	m_spinBoxXsz->setRange(1, 11);
+	m_spinBoxXsz->setRange(1, 31);
 
 	m_spinBoxXsz->setValue(1);
 
 	// y neighborhood
 	m_sliderYsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderYsz->setTickPosition(QSlider::TicksBelow);
-	m_sliderYsz->setTickInterval(2);
-	m_sliderYsz->setRange(1, 11); // range of slider - 256 to 256
+	m_sliderYsz->setTickInterval(1);
+	m_sliderYsz->setRange(1, 31); // range of slider - 256 to 256
 	m_sliderYsz->setValue(1);
 
 	// spinbox
 	m_spinBoxYsz = new QSpinBox(m_ctrlGrp);
-	m_spinBoxYsz->setRange(1, 11);
+	m_spinBoxYsz->setRange(1, 31);
 	m_spinBoxYsz->setValue(1);
 
 	// avg	
@@ -61,6 +61,13 @@ Median::controlPanel(){		// create control panel
 	// comboine
 	m_combinexy = new QCheckBox("Combine row and column window", m_ctrlGrp);
 
+	// hist method
+	m_HistMedian = new QCheckBox("Use histogram", m_ctrlGrp);
+
+	//clock label
+	m_clock = new QTextEdit("CLock: ", m_ctrlGrp);
+	m_clock->isReadOnly();
+	// 
 	// connect signal
 	connect(m_sliderXsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderX(int)));
 	connect(m_spinBoxXsz, SIGNAL(valueChanged(int)), this, SLOT(changeSliderX(int)));
@@ -72,10 +79,13 @@ Median::controlPanel(){		// create control panel
 	connect(m_spinBoxAvg, SIGNAL(valueChanged(int)), this, SLOT(changeAvg(int)));
 
 	connect(m_combinexy, SIGNAL(stateChanged(int)), this, SLOT(combine(int)));
+	connect(m_HistMedian, SIGNAL(stateChanged(int)), this, SLOT(useHist(int)));
+
 
 	QGridLayout *layout = new QGridLayout;
 
 	layout->addWidget(m_combinexy, 3, 0,1,3); // extend to 3 columns right
+	layout->addWidget(m_HistMedian, 4, 0, 1, 3); // extend to 3 columns right
 
 	layout->addWidget(labelSx, 1, 0);
 	layout->addWidget(m_sliderXsz, 1, 1);
@@ -88,6 +98,9 @@ Median::controlPanel(){		// create control panel
 	layout->addWidget(labelA, 0, 0);
 	layout->addWidget(m_sliderAvg, 0, 1);
 	layout->addWidget(m_spinBoxAvg, 0, 2);
+
+
+	layout->addWidget(m_clock, 5, 0, 3,3);
 
 	m_ctrlGrp->setLayout(layout);
 	disable(true);
@@ -104,7 +117,9 @@ Median::applyFilter(ImagePtr I1, ImagePtr I2){
 
 	int avg = m_sliderAvg->value();
 
-	getMedian(I1,xsz,ysz, avg, I2);
+	
+	getMedian(I1, xsz, ysz, avg, I2);
+	
 	return 1;
 }
 
@@ -265,6 +280,25 @@ Median::combine(int){
 		// if unchecked no need to apply filter
 		return;
 }
+
+void
+Median::useHist(int){
+	if (m_HistMedian->isChecked()) {
+		m_sliderAvg->setDisabled(true);
+		m_spinBoxAvg->setDisabled(true);
+	}
+	else{
+		m_sliderAvg->setDisabled(false);
+		m_spinBoxAvg->setDisabled(false);
+	}
+	// apply filter to source image; save result in destination image
+	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+
+	// display output
+	g_mainWindowP->displayOut();
+
+}
+
 void
 Median::changeAvg(int sz){
 
@@ -291,17 +325,25 @@ Median::getRowBuff(ChannelPtr<uchar> p1, int width, int pad){
 	uchar* temp = (uchar*)malloc(sizeof(uchar*)*(width + 2 * pad));
 	if (temp == NULL) exit(1);
 
+	// copy leftmost pixel left pad
 	int i = 0;
-	for (; i < pad; ++i){
+	while( i < pad){
 		temp[i]=*p1;
+		++i;
 	}
+
+	// copy row
 	width += i;
-	for (; i < width; ++i){
+	while( i < width){
 		temp[i]=(*p1++);
+		++i;
 	}
+
+	// copy rightmost pixel for right pad
 	pad += i;
-	for (; i < pad; ++i){
+	while (i < pad){
 		temp[i]=(*p1);
+		++i;
 	}
 
 	return temp;
@@ -309,6 +351,9 @@ Median::getRowBuff(ChannelPtr<uchar> p1, int width, int pad){
 
 void
 Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
+	clock_t t;
+	t = clock();
+
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 
 	int w = I1->width();  // input image
@@ -316,7 +361,7 @@ Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 	int total = w * h; // 
 
 	int type;
-	ChannelPtr<uchar> p1, p2, endd;
+	ChannelPtr<uchar> p1, p2, endd,endd2;
 
 	std::deque<uchar*> buffer;
 
@@ -327,6 +372,7 @@ Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
 		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
 		endd = p1 + total;
+		endd2 = p2 + total;
 
 		// create top pad 
 		for (int i = 0; i < ypad; ++i){
@@ -334,7 +380,7 @@ Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 			//xpad is number of pixels to be added to left and right of w 
 			buffer.push_back(getRowBuff(p1, w, xpad));
 		}
-		// add 1st few rows
+		// add 1st ysz - ypad  rows
 		// i used ysz since it determines neighborhood size of column
 		for (int i = 0; i < ysz - ypad; ++i){
 			buffer.push_back(getRowBuff(p1, w, xpad));
@@ -354,20 +400,37 @@ Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 		//for end
 		////
 		
-		// add 1st few rows
 		// add last rows
-		p1 -= w;
-		for (int i = 0; i < ypad; ++i){
-			get_med(p2, buffer, xsz ,ysz, w , avg);
-			p2+=w;
+		
+		// since i already copied last pixel it has gone over it so go back
+		p1 -= w;  
+
+		// get median and pop out values
+		// need to do for last + pad row
+		do{
+			get_med(p2, buffer, xsz, ysz, w, avg);
+			p2 += w;
 			free(buffer.front());
 			buffer.pop_front();
-			buffer.push_back(getRowBuff(p1, w, xpad));		
-		}
+			buffer.push_back(getRowBuff(p1, w, xpad));
+		} while (p2 < endd2);
+			
 
 	}
 	for (auto i : buffer){
 		free(i);
+	}
+
+	t = clock() - t;
+	
+	QString c = m_clock->toPlainText();
+
+	if (m_HistMedian->isChecked()){
+		m_clock->setText(c + " \n Hist time is " + QString::number((float)t));
+	}
+	else{
+		m_clock->setText(c + " \n SORT time is " + QString::number((float)t));
+
 	}
 
 }
@@ -381,14 +444,14 @@ Median::median(uchar*  sum, int avg, int size){
 	//std::sort(sum, sum+size);
 
 	// counting sort
-	int count[256] = {0}; //Can store the count of 255 positive numbers
+	int count[MXGRAY] = {0}; //Can store the count of 255 positive numbers
 
 	// get hist
 	for (int i = 0; i<size; i++)
 		count[sum[i]]++;
 
 	// get cummulative hist
-	for (int i = 1; i<256; i++)
+	for (int i = 1; i<MXGRAY; i++)
 		count[i] += count[i - 1];
 
 	// sorted array
@@ -415,30 +478,99 @@ Median::median(uchar*  sum, int avg, int size){
 
 void
 Median::get_med(ChannelPtr<uchar> p2,
-				std::deque <uchar* > buffer,
-				int xsz,int ysz, int w , int avg){
-	int size = 0;
-		uchar* sum;
-		sum = (uchar*)malloc(xsz*ysz);
-		size_t si = buffer.size();
+std::deque <uchar* > buffer,
+int xsz, int ysz, int w, int avg){
+	if (m_HistMedian->isChecked()){
+		get_med_Hist(p2, buffer, xsz, ysz, w);
 		
-		// sum each neighbor
-		for (int i = 0; i < w; i++){
-			for (int j = 0; j < si; j++){
-				// sum each row
-				int  k = i;
-				int nxt = i + xsz;
-			
-				for (; k < nxt; k++){
-					sum[size]=(buffer.at(j)[k]);
-					size++;
-				}
-				
+		return;
+	}
+
+	int size = 0;
+	uchar* sum;
+	sum = (uchar*)malloc(xsz*ysz);
+	size_t si = buffer.size();
+
+	// there are w neighborhood in a buffer
+	for (int i = 0; i < w; i++){
+
+		// for each rows in buffer copy values
+		for (int j = 0; j < si; j++){
+
+			// so iterate theough buffer
+			int  k = i;
+
+			// copy values from i to i + xsz of each row
+			int nxt = i + xsz;
+
+			for (; k < nxt; k++){
+				sum[size] = (buffer.at(j)[k]);
+				size++;
 			}
 
-			int m = median(sum, avg, size);
-			*p2 = m;
-			p2++;
-			size = 0;
 		}
+
+		// get median value and set output value, increment pointer
+		int m = median(sum, avg, size);
+		*p2 = m;
+		p2++;
+		size = 0;
+	}
+}
+
+void
+Median::get_med_Hist(ChannelPtr<uchar> p2,
+	std::deque <uchar* > buffer,
+	int xsz, int ysz, int w){
+
+	int med = xsz*ysz / 2 + 1 ; // median of 3 is 3/2 +1  = 1+1 =2
+	int m = 0;// = median(sum, avg, size);
+
+
+	int sum[MXGRAY] = { 0 };
+
+	// 1st get hist of 1st neighbor hood
+	for (int j = 0; j < ysz; j++){
+
+		// so iterate theough buffer
+		
+		// get histogram of 1st xsz items of each item in buffer
+		for (int k = 0; k < xsz; k++){
+			sum[buffer[j][k]]++;
+		}
+	}
+
+	// get median value and set output value, increment pointer
+	m = sum[0];
+	int k;
+	for (k = 1; m < med && k < MXGRAY; ++k){
+		m += sum[k];
+	}
+	*p2 = k;
+	k = 0;
+	p2++;
+
+	// there are w neighborhood in a buffer
+	for (int i = 0; i < w -1 ; i++){
+
+		
+		// remove leftmost item from hist
+		for (int b = 0; b < ysz; ++b){
+			// delete last item
+			sum[buffer[b][i]]--;
+			// add new item
+			sum[buffer[b][i+xsz]]++;
+		}
+		
+		// get median value and set output value, increment pointer
+
+		m = sum[0];
+		for (k = 1; m < med && k < MXGRAY; ++k){
+			m += sum[k];
+		}
+
+		*p2 = k;
+		p2++;
+	}
+
 }

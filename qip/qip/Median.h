@@ -4,7 +4,7 @@
 #include "ImageFilter.h"
 #include <deque>
 #include <algorithm>
-
+#include <time.h>       /* time_t, time, ctime */
 class Median :
 	public ImageFilter
 {
@@ -20,15 +20,20 @@ public:
 		void				get_med(ChannelPtr<uchar> p2, 
 									std::deque < uchar* > buffer,
 									int xsz ,int ysz, int w, int avg);
+		void				get_med_Hist(ChannelPtr<uchar> p2,
+										std::deque < uchar* > buffer,
+										int xsz, int ysz, int w);
 
 protected:
 	void		getMedian(ImagePtr I1, int xsz,int ysz, int avg, ImagePtr I2);
+	
 protected slots:
 	void		changeSliderX(int);
 	void		changeSliderY(int);
 
 	void		changeAvg(int);
 	void		combine(int);
+	void		useHist(int);
 private:
 	QGroupBox * m_ctrlGrp;
 	
@@ -42,6 +47,9 @@ private:
 	QSpinBox		*m_spinBoxAvg;
 
 	QCheckBox		*m_combinexy;
+	QCheckBox		*m_HistMedian;
+
+	QTextEdit			*m_clock;
 
 	uchar* 		getRowBuff(ChannelPtr<uchar> p1, int width, int pad);
 };

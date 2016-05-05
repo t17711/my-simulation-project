@@ -1,6 +1,6 @@
 #pragma warning(disable:4996)
+#pragma once
 #include <iostream>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <map>
@@ -18,6 +18,7 @@ public:
 	int j;
 	std::map<string,token_name> key_table;
 	int key_n;
+
 	scanner(){
 
 		pfile = fopen("test.txt", "rb"); // rb is read as binary
@@ -63,7 +64,6 @@ public:
 	}
 
 	~scanner(){
-		delete[] token_list;
 		fclose(pfile);
 		free(buffer);
 
@@ -75,7 +75,8 @@ public:
 			token_list[t]->print();
 			t++;
 		}
-
+		token_list[t]->print();
+		std::cout << std::endl << std::endl;
 	}
 
 	void get_eof()
@@ -86,6 +87,7 @@ public:
 
 	void get_key_table(){
 		key_n = 6;
+		key_table["CHAR"] = TK_CHAR_DEF;
 		key_table["FOR"] = TK_FOR;
 		key_table["INT"] = TK_INT_DEF;
 		key_table["FLOAT"] = TK_FLOAT_DEF;
@@ -129,7 +131,7 @@ public:
 			digit_token();
 			return;
 		}
-		else if (curr > 32 && !('A' <= curr && curr <= 'Z') && !('0' <= curr && curr <= '9')){
+		else {
 			operator_token();
 			return;
 		}
@@ -292,42 +294,45 @@ public:
 		// there is also exp portion as power of 10
 		// float later
 		//printf("digit_token\n");
+		
 		char curr;
 		curr = buffer[i];
-		//printf("%c\n", curr);
+
+
 		while ('0' <= curr && curr <= '9')
 		{
 			token_list[j]->int_value = token_list[j]->int_value * 10 + (curr - '0');
-			curr = buffer[++i];
+			i++;
+			curr = buffer[i];
 		}
 
 		if (curr == '.')
 		{
-			i++;
 			double_token();
 			return;
 		}
 		else if (curr == 'E')
 		{
-			i++;
 			exp_token();
 			return;
 		}
 
-		else if (curr <= 32 || curr == ';')
+		// digit cannot be followed by character, i did not do hex here maybe later
+		else if (curr >= 'A' && curr <= 'Z')
 		{
-			token_list[j++]->name = TK_INT;  // ist take everything as int
-			i++;
-			get_token();
-			return;
-		}
-		else
-		{
-			printf("Error in double integer: %c\n", curr);
+			printf("Error in integer: %c\n", curr);
 			get_eof();
 			return;
 		}
 
+		// if . or e are not found and other non numbers are then they are next token
+		else
+		{
+			token_list[j++]->name = TK_INT;  // ist take everything as int
+			get_token();
+			return;
+
+		}
 	}
 
 	void double_token()

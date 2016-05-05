@@ -1,48 +1,79 @@
-#ifndef TOKEN_H
-#define TOKEN_H
-
+#pragma once
 #include <string>
 #include <iostream>
 
-typedef enum {
-	TK,
-	TK_ID, // identifier
-	TK_BEGIN, // { open scope
-	TK_END, // } end scope
-	TK_INT, // INTEGER
-	TK_FLOAT,
-	TK_BOOL,
-	TK_STRING, // string
-	TK_CHAR, // char
-	TK_PLUS,
-	TK_MINUS,
-	TK_MUL,
-	TK_DIV,
-	TK_OPEN,  // (
-	TK_CLOSE, // )
-	TK_GREATER, //>
-	TK_LESS,	//<
-	TK_EQUAL,	//=
-	TK_QUES,	//?
-	TK_GREATER_EQUAL,	// >=
-	TK_LESS_EQUAL,		// <=
-	TK_COMPARE,
-	TK_SEMICOLON,		// ;	
-	TK_COLON, 		// :
-	TK_COMMA,		// :
-	TK_INCLUDE,
-	TK_DEFINE,
-	TK_DOT,
-	TK_EOF,
-	// key words
-	TK_FOR,
-	TK_WHILE,
-	TK_INT_DEF,
-	TK_FLOAT_DEF,
-	TK_BOOL_DEF,
-	TK_STRING_DEF,
-	TK_RETURN
-}token_name;
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
+#define for_tk_op(tk) \
+	tk(op_push)\
+	tk(op_pushi)\
+	tk(op_pop)\
+	tk(op_add)\
+	tk(op_sub)\
+	tk(op_mul)\
+	tk(op_div)\
+	tk(op_not)\
+	tk(op_and)\
+	tk(op_jmp)\
+	tk(op_end)\
+	tk(op_pos)\
+	tk(op_neg)\
+
+enum code_tk {
+for_tk_op(GENERATE_ENUM)
+};
+
+static const char *code_tk_string[] = {
+	for_tk_op(GENERATE_STRING)
+};
+
+#define for_tk_name(tk2)\
+	tk2(TK)\
+	tk2(TK_ID)\
+	tk2(TK_BEGIN)\
+	tk2(TK_END)\
+	tk2(TK_INT)\
+	tk2(TK_FLOAT)\
+	tk2(TK_BOOL)\
+	tk2(TK_STRING)\
+	tk2(TK_CHAR)\
+	tk2(TK_PLUS)\
+	tk2(TK_MINUS)\
+	tk2(TK_MUL)\
+	tk2(TK_DIV)\
+	tk2(TK_OPEN)\
+	tk2(TK_CLOSE)\
+	tk2(TK_GREATER)\
+	tk2(TK_LESS)\
+	tk2(TK_EQUAL)\
+	tk2(TK_QUES)\
+	tk2(TK_GREATER_EQUAL)\
+	tk2(TK_LESS_EQUAL)\
+	tk2(TK_COMPARE)\
+	tk2(TK_SEMICOLON)\
+	tk2(TK_COLON)\
+	tk2(TK_COMMA)\
+	tk2(TK_INCLUDE)\
+	tk2(TK_DEFINE)\
+	tk2(TK_DOT)\
+	tk2(TK_EOF)\
+	tk2(TK_FOR)\
+	tk2(TK_WHILE)\
+	tk2(TK_INT_DEF)\
+	tk2(TK_CHAR_DEF)\
+	tk2(TK_FLOAT_DEF)\
+	tk2(TK_BOOL_DEF)\
+	tk2(TK_STRING_DEF)\
+	tk2(TK_RETURN)\
+	
+	enum token_name {
+		for_tk_name(GENERATE_ENUM)
+	};
+
+	static const char *token_name_string[] = {
+		for_tk_name(GENERATE_STRING)
+	};
 
 class token
 {
@@ -53,10 +84,10 @@ public:
 	token(const token_name&, const std::string&);
 	token(const token_name&, const int&, const int&);
 	token&  operator = (const token& t);
+	
+
 	~token();
 	void print();
-	std::string get_token_name(token_name tk);
-
 public:
 	token_name name;
 	std::string id;
@@ -65,4 +96,3 @@ public:
 	int float_value;;
 };
 
-#endif

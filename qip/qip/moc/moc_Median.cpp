@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_Median_t {
-    QByteArrayData data[6];
-    char stringdata0[54];
+    QByteArrayData data[7];
+    char stringdata0[62];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -34,11 +34,12 @@ QT_MOC_LITERAL(1, 7, 13), // "changeSliderX"
 QT_MOC_LITERAL(2, 21, 0), // ""
 QT_MOC_LITERAL(3, 22, 13), // "changeSliderY"
 QT_MOC_LITERAL(4, 36, 9), // "changeAvg"
-QT_MOC_LITERAL(5, 46, 7) // "combine"
+QT_MOC_LITERAL(5, 46, 7), // "combine"
+QT_MOC_LITERAL(6, 54, 7) // "useHist"
 
     },
     "Median\0changeSliderX\0\0changeSliderY\0"
-    "changeAvg\0combine"
+    "changeAvg\0combine\0useHist"
 };
 #undef QT_MOC_LITERAL
 
@@ -48,7 +49,7 @@ static const uint qt_meta_data_Median[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       4,   14, // methods
+       5,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -56,12 +57,14 @@ static const uint qt_meta_data_Median[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   34,    2, 0x09 /* Protected */,
-       3,    1,   37,    2, 0x09 /* Protected */,
-       4,    1,   40,    2, 0x09 /* Protected */,
-       5,    1,   43,    2, 0x09 /* Protected */,
+       1,    1,   39,    2, 0x09 /* Protected */,
+       3,    1,   42,    2, 0x09 /* Protected */,
+       4,    1,   45,    2, 0x09 /* Protected */,
+       5,    1,   48,    2, 0x09 /* Protected */,
+       6,    1,   51,    2, 0x09 /* Protected */,
 
  // slots: parameters
+    QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Void, QMetaType::Int,    2,
     QMetaType::Void, QMetaType::Int,    2,
@@ -80,6 +83,7 @@ void Median::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 1: _t->changeSliderY((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 2: _t->changeAvg((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: _t->combine((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 4: _t->useHist((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -110,13 +114,13 @@ int Median::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 5)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 5;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 5)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 4;
+        _id -= 5;
     }
     return _id;
 }
