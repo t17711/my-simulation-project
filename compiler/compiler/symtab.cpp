@@ -1,6 +1,5 @@
 #include "symtab.h"
 
-
 symtab::symtab(int size)
 {
 	pos = 0;

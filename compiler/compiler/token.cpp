@@ -69,11 +69,15 @@ token::print(){
 	switch (name){
 		case TK_ID:
 			std::cout << id << "\t";
+			break;
 		case TK_INT:
 			std::cout << int_value << "\t";
 			break;
 		case TK_FLOAT:
 			std::cout << float_value << "\t";
+			break;
+		case TK_STRING:
+			std::cout << id << "\t";
 			break;
 		default:
 				break;

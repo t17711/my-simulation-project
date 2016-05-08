@@ -48,8 +48,20 @@ public:
 
 		buffer[result] = EOF;
 		size_t t = 0;
-		for (char *p = buffer; *p; p++)
-			*p = toupper(*p);
+		for (char *p = buffer; *p; p++){
+			// dont touch string
+			if (*p == '"'){
+				p++;
+				while (*p != '"')p++;
+				p++;
+			}
+			else if (*p == '\''){
+				p += 3;
+			}
+			else{
+				*p = toupper(*p);
+			}
+		}
 
 		while (t<result) cout << buffer[t++];
 
@@ -95,6 +107,8 @@ public:
 		key_table["WHILE"] = TK_WHILE;
 		key_table["BOOL"] = TK_BOOL_DEF;
 		key_table["RETURN"] = TK_RETURN;
+		key_table["PRINT"] = TK_PRINT;
+
 	}
 
 	void check_keyword(token* tk)
@@ -274,7 +288,6 @@ public:
 			break;
 		case '"':
 		//	get_string
-
 			get_string_token();
 			return;
 		default:

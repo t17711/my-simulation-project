@@ -21,34 +21,48 @@ public:
 public:
 	parser(token** c, int token_size);
 	~parser();
-
+	void code_print();
 	void error(string);
-	void get_token();
 
+	// get next token
+	token* curr_token();
+
+
+	// start program here
 	void start_prog();
 
+	// do variable declaration here
 	void var_decl();
 	void decl();
+	void namelist(char t);
+
+	// got to statement lock here
 	void statements();
+
+	// this does single statement
 	void statment_types();
 
+	// this assigns value
 	void assignment();
 
+	// these are for calculator
 	void expression();
 	void add_sub();
 	void mul_div();
 	void value();
 	void expression_mul_div();
 
-
-	void namelist(char t);
-
+	// this is for print statement
+	void print();
+	// this gives the type if token is type tokwen
 	char type();
+	// compares token and moves up
 	void match(token_name t);
+
 
 	// these all change same array code[];
 	void gen_op_code(code_tk code);
-	void gen_op_code_var(int addr);
+	void gen_char(char val);
 	void gen_address(int i);
 	void emmit(string s);
 

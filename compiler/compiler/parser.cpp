@@ -10,7 +10,9 @@ parser::parser(token** c, int token_size)
 
 }
 
-void parser::gen_op_code(code_tk t){
+/*this puts code enum to the list*/
+void
+parser::gen_op_code(code_tk t){
 
 	*(code_tk*)(code +ip)= t;
 	ip += sizeof(code_tk);
@@ -19,17 +21,20 @@ void parser::gen_op_code(code_tk t){
 
 }
 
-void parser::gen_op_code_var(int addr){
+/*this adds value to the */
+void
+parser::gen_address(int addr){
 	*(int*)(code + ip) = addr;
 	ip += sizeof(int);
-	cout << "inserted  address:  " <<addr << endl;
+	cout <<addr << endl;
 
 }
 
-void parser::gen_address(int t){
-	*(int*)code = t;
-	ip += sizeof(int);
-	cout << "inserted  \t: token num  " << t << endl;
+void
+parser::gen_char(char t){
+	*(code+ip) = t;
+	ip += sizeof(char);
+	cout << t << endl;
 }
 
 // this starts program
@@ -40,7 +45,7 @@ parser::start_prog(){
 	statements();
 	match(TK_END);
 	if (token_list[currtoken]->name == TK_EOF) {
-		gen_op_code(op_end);
+		gen_op_code(op_eof);
 		match(TK_EOF);
 		return;
 	}
@@ -77,7 +82,9 @@ parser::decl(){
 	}
 }
 
-void parser::namelist(char t){
+// this looks if declaration is multiple
+void
+parser::namelist(char t){
 	// check current lists to see if we need tpo add
 	string curr = token_list[currtoken]->id;
 
@@ -104,7 +111,10 @@ void parser::namelist(char t){
 		return;
 	}
 }
-char parser::type(){
+
+//this gives typeof variable
+char
+parser::type(){
 	switch (token_list [currtoken]->name){
 	case TK_CHAR_DEF:
 		match(TK_CHAR_DEF);
@@ -128,7 +138,9 @@ char parser::type(){
 	currtoken++;
 }
 
-void parser::statements(){
+// this is statements
+void
+parser::statements(){
 	//cout << " got into statements\n";
 
 	// start scope
@@ -138,7 +150,9 @@ void parser::statements(){
 
 }
 
-void parser::statment_types(){
+// this checks for different type of statements
+void
+parser::statment_types(){
 	//cout << " got into statement types\n";
 	token_name curr = token_list[currtoken]->name;
 	token_name curr2 = token_list[currtoken + 1]->name;
@@ -155,8 +169,10 @@ void parser::statment_types(){
 			break;
 		}
 		break;
-	case TK_FOR:
 
+	// now check print token
+	case TK_PRINT:
+		this->print();
 		break;
 	// now if no more statement
 	case TK_END:
@@ -167,7 +183,9 @@ void parser::statment_types(){
 
 }
 
-void parser::assignment(){
+// this assigns value to a variable
+void
+parser::assignment(){
 	// get stuff to assign
 	//cout << " got into assignment\n";
 	int addr = stack->get_address(token_list[currtoken]->id);
@@ -181,7 +199,7 @@ void parser::assignment(){
 	match(TK_SEMICOLON);
 
 	gen_op_code(op_pop);
-	gen_op_code_var(addr);
+	gen_address(addr);
 	
 	// now go check if there are more statements
 	statment_types();
@@ -189,12 +207,15 @@ void parser::assignment(){
 
 }
 
-void parser::expression(){
+// these do calculator funct
+void
+parser::expression(){
 	expression_mul_div();
 	add_sub();
 }
-
-void parser::add_sub(){
+// addition, subtraction
+void
+parser::add_sub(){
 	token_name curr = token_list[currtoken]->name;
 	if (curr == TK_PLUS){
 		match(TK_PLUS);
@@ -210,12 +231,16 @@ void parser::add_sub(){
 	}
 }
 
-void parser::expression_mul_div(){
+// multiplication start
+void
+parser::expression_mul_div(){
 	value();
 	mul_div();
 }
 
-void parser::mul_div(){
+// multiplication, division end
+void
+parser::mul_div(){
 	token_name curr = token_list[currtoken]->name;
 
 	if (curr == TK_MUL){
@@ -233,7 +258,9 @@ void parser::mul_div(){
 
 }
 
-void parser::value(){
+// this checks if there are more expressions or address to be looked for
+void
+parser::value(){
 	token_name curr = token_list[currtoken]->name;
 	string id = token_list[currtoken]->id;
 	// 1st look if it a value
@@ -241,13 +268,13 @@ void parser::value(){
 	switch (curr){
 	case TK_INT:
 		gen_op_code(op_pushi);
-		gen_op_code_var(token_list[currtoken]->int_value);
+		gen_address(token_list[currtoken]->int_value);
 		match(TK_INT);
 
 		break;
 	case TK_ID:
 		gen_op_code(op_push);
-		gen_op_code_var(stack->get_address(id));
+		gen_address(stack->get_address(id));
 		match(TK_ID);
 		break;
 
@@ -271,9 +298,41 @@ void parser::value(){
 	}
 }
 
-void parser::match(token_name t){
-	if (t != token_list[currtoken]->name)
-		error(" wrong token");
+
+// print statement
+
+void
+parser::print(){
+	match(TK_PRINT);
+	match(TK_OPEN);
+	// if there is string print string else print value
+	if (token_list[currtoken]->name == TK_STRING){
+		int i = token_list[currtoken]->id.length();
+		char* cstr = new char[i];
+		std::strcpy(cstr, token_list[currtoken]->id.c_str());
+
+		for (int j = 0; j < i; ++j){
+			gen_op_code(op_printc);
+			gen_char(cstr[j]);
+		}
+		match(TK_STRING);
+
+	}
+	else 
+		value();
+		gen_op_code(op_print);	
+	match(TK_CLOSE);
+	match(TK_SEMICOLON);
+	statment_types();
+}
+
+// this checks and increments current token position
+void
+parser::match(token_name t){
+	if (t != token_list[currtoken]->name){
+		std::cout << " wrong token " << token_name_string[token_list[currtoken]->name] << " instead of  " << token_name_string[t] << endl;
+		exit(0);
+	}
 	else{
 		//cout << "matched ";
 		//token_list[currtoken]->print();
@@ -281,12 +340,47 @@ void parser::match(token_name t){
 	}
 }
 
-void parser::error(string e){
+// just error
+void
+parser::error(string e){
 	cout << "Error: " << e << endl;
 }
 
+// destructor
 parser::~parser()
 {
 	delete[] token_list;
 	delete[] code;
+}
+
+// print code
+void 
+parser::code_print(){
+	code_tk t;
+	ip = 0;
+
+	while (*(code_tk*)(code + ip) != op_eof){
+		t = *(code_tk*)(code + ip);
+		ip += sizeof(code_tk);
+
+		if (t == op_pushi ||
+			t == op_pop ||
+			t == op_push 
+			){
+			int addr = *(int*)(code + ip);
+			cout << code_tk_string[t] << "\t\t" << addr << endl;
+			ip += sizeof(int);
+			continue;
+		}
+		if (t == op_printc){
+			char addr = *(char*)(code + ip);
+			cout << code_tk_string[t] << "\t\t" << addr << endl;
+			ip += sizeof(char);
+			continue;
+
+		}
+		cout << code_tk_string[t] << endl;
+	}
+	cout << code_tk_string[*(code_tk*)(code + ip) ] << endl;
+
 }

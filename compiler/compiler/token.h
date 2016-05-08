@@ -16,9 +16,11 @@
 	tk(op_not)\
 	tk(op_and)\
 	tk(op_jmp)\
-	tk(op_end)\
+	tk(op_eof)\
 	tk(op_pos)\
 	tk(op_neg)\
+	tk(op_print)\
+	tk(op_printc)\
 
 enum code_tk {
 for_tk_op(GENERATE_ENUM)
@@ -66,6 +68,8 @@ static const char *code_tk_string[] = {
 	tk2(TK_BOOL_DEF)\
 	tk2(TK_STRING_DEF)\
 	tk2(TK_RETURN)\
+	tk2(TK_PRINT) \
+	
 	
 	enum token_name {
 		for_tk_name(GENERATE_ENUM)

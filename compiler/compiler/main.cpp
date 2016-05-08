@@ -2,6 +2,7 @@
 
 #include "scanner.cpp"
 #include "parser.h"
+#include "execute.h"
 
 using namespace std;
 int main(int argc, char **argv)
@@ -13,6 +14,8 @@ int main(int argc, char **argv)
 	parser p = parser(c.token_list, c.j);
 	p.start_prog();
 	p.stack->print();
+	p.code_print();
+	
 
 	return 0;
 }
