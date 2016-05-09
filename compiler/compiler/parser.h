@@ -22,7 +22,7 @@ public:
 	parser(token** c, int token_size);
 	~parser();
 	void code_print();
-	void error(string);
+	//void error(string);
 
 	// get next token
 	token* curr_token();
@@ -63,6 +63,7 @@ public:
 	// these all change same array code[];
 	void gen_op_code(code_tk code);
 	void gen_char(char val);
+	void gen_float(float, int);
 	void gen_address(int i);
 	void emmit(string s);
 

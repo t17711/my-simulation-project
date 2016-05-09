@@ -23,7 +23,7 @@ public:
 
 		pfile = fopen("test.txt", "rb"); // rb is read as binary
 		if (!pfile) {
-			perror("file opening failed");
+			error("file opening failed", " ", " ");
 			return;
 		}
 
@@ -37,12 +37,12 @@ public:
 		buffer = (char*)malloc(size + 1);
 
 	
-		if (buffer == NULL) { fputs("Memory error", stderr); exit(2); }
+		if (buffer == NULL) { error("Memory error", " ", " "); exit(2); }
 
 		// copy the file into the buffer:
 		result = std::fread(buffer, 1, size, pfile);
-		printf("file size is : %ld\n", size);
-		printf("file size is : %ld\n", result);
+	/*	printf("file size is : %ld\n", size);
+		printf("file size is : %ld\n", result);*/
 
 		token_list = new token*[result];
 
@@ -63,7 +63,7 @@ public:
 			}
 		}
 
-		while (t<result) cout << buffer[t++];
+	//	while (t<result) cout << buffer[t++];
 
 		// create a list of tokens
 		get_key_table();
@@ -72,7 +72,7 @@ public:
 		}
 		
 	
-		cout << "\nfinish" << endl;
+		//cout << "\nfinish" << endl;
 	}
 
 	~scanner(){
@@ -283,19 +283,20 @@ public:
 		case '#':
 			hash_token();
 			return;
-		case '.':
+		/*case '.':
 			i++;
-			break;
+			break;*/
+		case '\'':
+			//	get char
+			get_char_token();
+			return;
+
 		case '"':
 		//	get_string
 			get_string_token();
 			return;
 		default:
-			printf("incorrect operator %c \n", curr);
-			{
-				get_eof();
-				return;
-			}
+			error("incorrect operator", " ", " ");
 		}
 		get_token();
 	}
@@ -321,11 +322,13 @@ public:
 
 		if (curr == '.')
 		{
-			double_token();
+			i++;
+			float_token();
 			return;
 		}
 		else if (curr == 'E')
 		{
+			i++;
 			exp_token();
 			return;
 		}
@@ -348,7 +351,7 @@ public:
 		}
 	}
 
-	void double_token()
+	void float_token()
 	{
 		//printf("double\n");
 
@@ -356,12 +359,23 @@ public:
 		char curr;
 		curr = buffer[i];
 		token_list[j]->exp = 0; //  0.1 decimal is 1* 10^-1
+
+		// 1st copy int value
+		token_list[j]->float_value = token_list[j]->int_value;
+		token_list[j]->int_value = 0;
+
+		float e = 0.0;
+		float pos = 1.0;
 		while ('0' <= curr && curr <= '9')
 		{
-			token_list[j]->float_value = token_list[j]->float_value * 10 + (curr - '0');
-			token_list[j]->exp--;
+			e = e*10+ (curr - '0');
 			curr = buffer[++i];
+			pos*=10;
 		}
+
+		// add exponent part too
+		token_list[j]->float_value += e/pos;
+
 		if (curr == 'E')
 		{
 			i++;
@@ -370,14 +384,13 @@ public:
 		}
 		else if (curr <= 32 || curr == ';')
 		{
-			i++;
 			j++;
 			get_token();
 			return;
 		}
 		else
 		{
-			printf("bad double: %c\n", curr);
+			printf("bad float: %c\n", curr);
 			j++;
 			get_eof();
 			return;
@@ -396,19 +409,20 @@ public:
 		while ('0' <= curr && curr <= '9')
 		{
 			temp = temp * 10 + (curr - '0');
-			curr = buffer[++i];
+			i++;
+			curr = buffer[i];
 		}
-		token_list[j]->exp = token_list[j]->exp + temp;
+		token_list[j]->exp =  temp;
+		
 		if (curr <= 32 || curr == ';')
 		{
-			i++;
 			j++;
 			get_token();
 			return;
 		}
 		else
 		{
-			printf("bad double: %c\n", curr);
+			printf("bad exp: %c\n", curr);
 			{
 				j++;
 				get_eof();
@@ -500,7 +514,44 @@ public:
 		return get_token();
 
 	}
+	
+	void
+	get_char_token(){
+		//std::cout << buffer[i] << endl;
+		token_list[j]->name = TK_CHAR;  
+		// any thing can be char
 
+		if (buffer[i] == '\\'){
+			i++;
+			switch (buffer[i]){
+			case 'n':
+				token_list[j]->char_val = '\n';
+				break;
+			case 't':
+				token_list[j]->char_val = '\t';
+				break;
+			default:
+				error("bad string operator ", buffer[i], " ");
+				exit(0);
+			}
+			i++;
+		}
+		else{
+			token_list[j]->char_val = buffer[i];
+			i++;
+		}
+		
+		if (buffer[i]!= '\''){
+			error("char not closed", buffer[i], " ");
+			exit(0);
+		}
+		else{
+			i++;
+			j++;
+			get_token();
+		}
+	}
+	
 	void comment( int type)
 	{
 		//printf("comment\n");

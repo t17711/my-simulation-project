@@ -63,26 +63,35 @@ void symtab::insert_id(string id, char c){
 void symtab::insert(string id, int val){
 	// need to be already declared
 	// taken care of that in parser
+	*(symarray + pos) = 'I';
+	pos += sizeof(char);
 	*((int*)symarray + pos)=val;
 }
 void symtab::insert(string id, char val){
+	*(symarray + pos) = 'C';
+	 pos += sizeof(char);
 	*(symarray + pos) = val;
 }
 
 void symtab::insert(string id, float val){
+	*(symarray + pos) = 'F';
+	pos += sizeof(float);
 	*((float*)symarray + pos) = val;
 }
 
 void symtab::insert(string id, string val){
 	// need to be already declared
 	// taken care of that in parser
+	*(symarray + pos) = 'S';
+	pos += sizeof(char);
 	*((string**)symarray + pos) = &val;
 }
 
 void symtab::insert(string id, bool val){
 	// need to be already declared
 	// taken care of that in parser
-
+	*(symarray + pos) = 'B';
+	pos += sizeof(char);
 	*(symarray + pos) = val;
 	// minimum is char, char > bool
 }

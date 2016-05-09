@@ -17,7 +17,7 @@ parser::gen_op_code(code_tk t){
 	*(code_tk*)(code +ip)= t;
 	ip += sizeof(code_tk);
 
-	cout <<  code_tk_string[t]   <<endl;
+	//cout <<  code_tk_string[t]   <<endl;
 
 }
 
@@ -26,7 +26,7 @@ void
 parser::gen_address(int addr){
 	*(int*)(code + ip) = addr;
 	ip += sizeof(int);
-	cout <<addr << endl;
+	//cout <<addr << endl;
 
 }
 
@@ -34,9 +34,28 @@ void
 parser::gen_char(char t){
 	*(code+ip) = t;
 	ip += sizeof(char);
-	cout << t << endl;
+	//cout << t << endl;
 }
 
+void
+parser::gen_float(float t, int e){
+	float x = t;
+	if (e > 0){
+		while (e > 0){
+			x = x * 10;
+			e--;
+		}
+	}
+	else if (e < 0){
+		while (e < 0){
+			x = x / 10;
+			e++;
+		}
+	}
+	*(float*)(code+ip) = x;
+	ip += sizeof(float);
+	//cout << t << endl;
+}
 // this starts program
 void 
 parser::start_prog(){
@@ -49,7 +68,7 @@ parser::start_prog(){
 		match(TK_EOF);
 		return;
 	}
-	else error("No end of file");
+	else error("No end of file",' ',' ');
 
 }
 
@@ -90,7 +109,7 @@ parser::namelist(char t){
 
 	// if it is in symtab  show erro
 	if (stack->check_symtab(curr)) {
-		error(" already declared " + curr);
+		error(" already declared ",curr,' ');
 		return;
 	}
 
@@ -107,7 +126,7 @@ parser::namelist(char t){
 		decl();
 	}
 	else {
-		error("no id");
+		error("no id there is ", token_name_string[token_list[currtoken]->name], ' ');
 		return;
 	}
 }
@@ -132,7 +151,7 @@ parser::type(){
 		match(TK_FLOAT_DEF);
 		return 'F';
 	default:
-		error(" no type found");
+		error(" no type found"," ", " ");
 		return 't';
 	}
 	currtoken++;
@@ -178,7 +197,7 @@ parser::statment_types(){
 	case TK_END:
 		return;
 	default:
-		error(" bad statwement");
+		error(" bad statement", " " , " ");
 	}
 
 }
@@ -278,6 +297,19 @@ parser::value(){
 		match(TK_ID);
 		break;
 
+	// check for char value
+	case TK_CHAR:
+		gen_op_code(op_pushc);
+		gen_char(token_list[currtoken]->char_val);
+		match(TK_CHAR);
+		break;
+
+	case TK_FLOAT:
+		gen_op_code(op_pushf);
+		gen_float(token_list[currtoken]->float_value, token_list[currtoken]->exp);
+		match(TK_FLOAT);
+		break;
+
 		// check if it is negation or positive
 	case TK_PLUS:
 		match(TK_PLUS);
@@ -313,14 +345,37 @@ parser::print(){
 
 		for (int j = 0; j < i; ++j){
 			gen_op_code(op_printc);
+			if (cstr[j] == '\\'){
+				j++;
+				switch (cstr[j]){
+				case 'n':
+					gen_char('\n');
+					break;
+				case 't':
+					gen_char('\t');
+					break;
+				default:
+					error("bad string operator ", cstr[j], " ");
+					exit(0);
+
+				}
+
+				continue;
+			}
 			gen_char(cstr[j]);
 		}
 		match(TK_STRING);
 
 	}
-	else 
+	else if (token_list[currtoken]->name == TK_CHAR){
+		gen_op_code(op_printc);
+		gen_char(token_list[currtoken]->char_val);
+		match(TK_CHAR);
+	}
+	else {
 		value();
-		gen_op_code(op_print);	
+		gen_op_code(op_print);
+	}
 	match(TK_CLOSE);
 	match(TK_SEMICOLON);
 	statment_types();
@@ -330,7 +385,8 @@ parser::print(){
 void
 parser::match(token_name t){
 	if (t != token_list[currtoken]->name){
-		std::cout << " wrong token " << token_name_string[token_list[currtoken]->name] << " instead of  " << token_name_string[t] << endl;
+		error(" wrong token ", token_name_string[token_list[currtoken]->name], " ");
+		error("instead of ",token_name_string[t], " ");
 		exit(0);
 	}
 	else{
@@ -340,11 +396,6 @@ parser::match(token_name t){
 	}
 }
 
-// just error
-void
-parser::error(string e){
-	cout << "Error: " << e << endl;
-}
 
 // destructor
 parser::~parser()
@@ -368,19 +419,27 @@ parser::code_print(){
 			t == op_push 
 			){
 			int addr = *(int*)(code + ip);
-			cout << code_tk_string[t] << "\t\t" << addr << endl;
+			std::cout << code_tk_string[t] << "\t\t" << addr << std::endl;
 			ip += sizeof(int);
 			continue;
 		}
-		if (t == op_printc){
+		if (t == op_printc || t == op_pushc){
 			char addr = *(char*)(code + ip);
-			cout << code_tk_string[t] << "\t\t" << addr << endl;
+			std::cout << code_tk_string[t] << "\t\t" << addr << std::endl;
 			ip += sizeof(char);
 			continue;
 
 		}
-		cout << code_tk_string[t] << endl;
+		if (t == op_pushf){
+			float addr = *(float*)(code + ip);
+			std::cout << code_tk_string[t] << "\t\t";
+			printf("%f\n",addr);
+			ip += sizeof(float);
+			continue;
+		}
+		std::cout << code_tk_string[t] << std::endl;
 	}
-	cout << code_tk_string[*(code_tk*)(code + ip) ] << endl;
+	std::cout << code_tk_string[*(code_tk*)(code + ip) ] << std::endl;
+	std::cout << "final pos  " << ip<<std::endl;
 
 }

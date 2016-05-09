@@ -4,10 +4,13 @@
 
 #define GENERATE_ENUM(ENUM) ENUM,
 #define GENERATE_STRING(STRING) #STRING,
+#define error(A,B,C)(std::cout<<A<<" " <<B<< " " <<C<<std::endl ) 
 
 #define for_tk_op(tk) \
 	tk(op_push)\
 	tk(op_pushi)\
+	tk(op_pushc)\
+	tk(op_pushf)\
 	tk(op_pop)\
 	tk(op_add)\
 	tk(op_sub)\
@@ -25,6 +28,7 @@
 enum code_tk {
 for_tk_op(GENERATE_ENUM)
 };
+
 
 static const char *code_tk_string[] = {
 	for_tk_op(GENERATE_STRING)
@@ -97,6 +101,7 @@ public:
 	std::string id;
 	int int_value;
 	int exp;
-	int float_value;;
+	float float_value;;
+	char char_val;
 };
 
