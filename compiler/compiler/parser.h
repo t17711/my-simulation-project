@@ -15,12 +15,10 @@ public:
 	int currtoken;
 	symtab* stack;
 	int ip;
-
 	char* code;
 
 public:
 	parser(token** c, int token_size);
-	~parser();
 	void code_print();
 	//void error(string);
 
@@ -52,6 +50,11 @@ public:
 	void value();
 	void expression_mul_div();
 
+	// do while statement
+	void do_while();
+	void m_while();
+	void conditions(int target);
+
 	// this is for print statement
 	void print();
 	// this gives the type if token is type tokwen
@@ -65,6 +68,8 @@ public:
 	void gen_char(char val);
 	void gen_float(float, int);
 	void gen_address(int i);
+	void gen_bool(bool v);
+
 	void emmit(string s);
 
 };

@@ -18,7 +18,6 @@ parser::gen_op_code(code_tk t){
 	ip += sizeof(code_tk);
 
 	//cout <<  code_tk_string[t]   <<endl;
-
 }
 
 /*this adds value to the */
@@ -35,6 +34,15 @@ parser::gen_char(char t){
 	*(code+ip) = t;
 	ip += sizeof(char);
 	//cout << t << endl;
+}
+
+void
+parser::gen_bool(bool v){
+	*(bool*)(code + ip) = v;
+	// since sometimes char is bigger than char
+	ip += sizeof(char);
+	//cout <<addr << endl;
+
 }
 
 void
@@ -184,8 +192,6 @@ parser::statment_types(){
 		case TK_EQUAL:
 			assignment();
 			break;
-		case TK_OPEN:
-			break;
 		}
 		break;
 
@@ -194,6 +200,9 @@ parser::statment_types(){
 		this->print();
 		break;
 	// now if no more statement
+	case TK_DO:
+		do_while();
+		break;
 	case TK_END:
 		return;
 	default:
@@ -236,18 +245,30 @@ parser::expression(){
 void
 parser::add_sub(){
 	token_name curr = token_list[currtoken]->name;
-	if (curr == TK_PLUS){
+	switch (curr){
+	case TK_PLUS:
 		match(TK_PLUS);
 		expression_mul_div();
 		gen_op_code(op_add);
 		add_sub();
-	}
-	else if (curr == TK_MINUS){
+		break;
+	case TK_MINUS:
 		match(TK_MINUS);
 		expression_mul_div();
 		gen_op_code(op_sub);
 		add_sub();
+		break;
+	case TK_OR:
+		match(TK_OR);
+		expression_mul_div();
+		gen_op_code(op_or);
+		add_sub();
+		break;
+	default:
+		// so empty
+		break;
 	}
+
 }
 
 // multiplication start
@@ -262,17 +283,64 @@ void
 parser::mul_div(){
 	token_name curr = token_list[currtoken]->name;
 
-	if (curr == TK_MUL){
+	switch (curr){
+	case TK_AND:
+		match(TK_AND);
+		value();
+		gen_op_code(op_and);
+		expression_mul_div();
+		break;
+	case TK_MUL:
 		match(TK_MUL);
 		value();
 		gen_op_code(op_mul);
-		mul_div();
-	}
-	else if (curr == TK_DIV){
+		expression_mul_div();
+		break;
+
+	case TK_DIV:
 		match(TK_DIV);
 		value();
 		gen_op_code(op_div);
-		mul_div();
+		expression_mul_div();
+		break;
+
+	case TK_GREATER:
+		match(TK_GREATER);
+		expression_mul_div();
+		gen_op_code(op_greater);
+		expression_mul_div();
+		break;
+
+	case TK_GREATER_EQUAL:
+		match(TK_GREATER_EQUAL);
+		value();
+		gen_op_code(op_greater_eql);
+		expression_mul_div();
+		break;
+
+	case TK_LESS:
+		match(TK_LESS);
+		value();
+		gen_op_code(op_less);
+		expression_mul_div();
+		break;
+
+	case TK_LESS_EQUAL:
+		match(TK_LESS_EQUAL);
+		value();
+		gen_op_code(op_less_eql);
+		expression_mul_div();
+		break;
+
+	case TK_EQUAL_COMP:
+		match(TK_EQUAL_COMP);
+		value();
+		gen_op_code(op_eql);
+		expression_mul_div();
+		break;
+	default:
+		// so empty
+		break;
 	}
 
 }
@@ -304,13 +372,33 @@ parser::value(){
 		match(TK_CHAR);
 		break;
 
+	// float value
 	case TK_FLOAT:
 		gen_op_code(op_pushf);
 		gen_float(token_list[currtoken]->float_value, token_list[currtoken]->exp);
 		match(TK_FLOAT);
 		break;
+	
+	// true false
+	case TK_TRUE:
+		gen_op_code(op_pushb);
+		gen_bool(true);
+		match(TK_TRUE);
+		break;
 
-		// check if it is negation or positive
+	case TK_FALSE:
+		gen_op_code(op_pushb);
+		gen_bool(false);
+		match(TK_FALSE);
+		break;
+
+	case TK_NOT:
+		match(TK_NOT);
+		value();
+		gen_op_code(op_not);
+		break;
+
+	// check if it is negation or positive
 	case TK_PLUS:
 		match(TK_PLUS);
 		value();
@@ -322,14 +410,18 @@ parser::value(){
 		value();
 		gen_op_code(op_neg);
 		break;
+
 		// check for open close parenthesis
 	case TK_OPEN:
 		match(TK_OPEN);
 		expression();
 		match(TK_CLOSE);
-	}
-}
 
+	default:
+		break;
+	}
+
+}
 
 // print statement
 
@@ -381,6 +473,27 @@ parser::print(){
 	statment_types();
 }
 
+// do while loop
+void parser::do_while(){
+	match(TK_DO);
+	int target = ip;
+	statements();
+	match(TK_WHILE);
+	conditions(target);
+	match(TK_SEMICOLON);
+
+	// now go check if there are more statements
+	statment_types();
+	// need to do calculator here
+
+}
+
+void parser::conditions(int target){
+	expression();
+	gen_op_code(op_jfalse);
+	gen_address(target);
+}
+
 // this checks and increments current token position
 void
 parser::match(token_name t){
@@ -397,13 +510,6 @@ parser::match(token_name t){
 }
 
 
-// destructor
-parser::~parser()
-{
-	delete[] token_list;
-	delete[] code;
-}
-
 // print code
 void 
 parser::code_print(){
@@ -416,7 +522,8 @@ parser::code_print(){
 
 		if (t == op_pushi ||
 			t == op_pop ||
-			t == op_push 
+			t == op_push ||
+			t == op_jfalse
 			){
 			int addr = *(int*)(code + ip);
 			std::cout << code_tk_string[t] << "\t\t" << addr << std::endl;
@@ -435,6 +542,17 @@ parser::code_print(){
 			std::cout << code_tk_string[t] << "\t\t";
 			printf("%f\n",addr);
 			ip += sizeof(float);
+			continue;
+		}
+		if (t == op_pushb){
+			bool addr = *(bool*)(code + ip);
+			std::cout << code_tk_string[t] << "\t\t";
+			if (addr)
+				printf("true \n");
+			else
+				printf("flase \n");
+
+			ip += sizeof(char);
 			continue;
 		}
 		std::cout << code_tk_string[t] << std::endl;

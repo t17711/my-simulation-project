@@ -37,7 +37,8 @@ public:
 		buffer = (char*)malloc(size + 1);
 
 	
-		if (buffer == NULL) { error("Memory error", " ", " "); exit(2); }
+		if (buffer == NULL) { error("Memory error", " ", " "); 
+		exit(2); }
 
 		// copy the file into the buffer:
 		result = std::fread(buffer, 1, size, pfile);
@@ -98,7 +99,6 @@ public:
 	}
 
 	void get_key_table(){
-		key_n = 6;
 		key_table["CHAR"] = TK_CHAR_DEF;
 		key_table["FOR"] = TK_FOR;
 		key_table["INT"] = TK_INT_DEF;
@@ -108,6 +108,12 @@ public:
 		key_table["BOOL"] = TK_BOOL_DEF;
 		key_table["RETURN"] = TK_RETURN;
 		key_table["PRINT"] = TK_PRINT;
+		key_table["OR"] = TK_OR;
+		key_table["AND"] = TK_AND;
+		key_table["DO"] = TK_DO;
+		key_table["TRUE"] = TK_TRUE;
+		key_table["FALSE"] = TK_FALSE;
+		key_table["NOT"] = TK_NOT;
 
 	}
 
@@ -249,27 +255,35 @@ public:
 			if (buffer[i] == '=')
 			{
 				token_list[j++]->name = TK_GREATER_EQUAL;
+				i++;
 			}
 			else
 			{
 				token_list[j++]->name = TK_GREATER;
 			}
-			i++;
 			break;
 		case '<':
 			if (buffer[i] == '=')
 			{
 				token_list[j++]->name = TK_LESS_EQUAL;
+				i++;
 			}
 			else
 			{
 				token_list[j++]->name = TK_LESS;
 			}
 
-			i++;
 			break;
 		case '=':
-			token_list[j++]->name = TK_EQUAL;
+			if (buffer[i] == '=')
+			{
+				token_list[j++]->name = TK_EQUAL_COMP;
+				i++;
+			}
+			else
+			{
+				token_list[j++]->name = TK_EQUAL;
+			}
 			break;
 		case '?':
 			token_list[j++]->name = TK_QUES;

@@ -87,10 +87,10 @@ MainWindow::createActions()
 	// Point Ops Actions
 	//////////////////////////////
 
-	m_actionThreshold = new QAction("&Threshold", this);
-	m_actionThreshold->setShortcut(tr("Ctrl+T"));
-	m_actionThreshold->setIcon(QIcon("icons/threshold.png"));
-	m_actionThreshold->setData(THRESHOLD);
+	m_actionThreshold = new QAction("&Threshold", this); // create action
+	m_actionThreshold->setShortcut(tr("Ctrl+T")); // set shortcut for the action
+	m_actionThreshold->setIcon(QIcon("icons/threshold.png")); // attach icon to the action
+	m_actionThreshold->setData(THRESHOLD);  // set index to action
 
 	m_actionContrast = new QAction("&Contrast", this);
 	m_actionContrast->setShortcut(tr("Ctrl+C"));

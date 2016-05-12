@@ -1,15 +1,11 @@
 #pragma once
 #include "token.h"
 #include "symtab.h"
-#include <vector>
-#define max_funct 14
-
 
 class execute
 {
 public:
 	execute(char* code, symtab* tab);
-	~execute();
 
 public:
 	int mul();
@@ -29,6 +25,15 @@ public:
 	int pos();
 	int neg();
 	int printc();
+
+	int or();
+	int greater();
+	int greater_eql();
+	int less();
+	int less_eql();
+	int eql();
+	int pushb();
+	int jfalse();
 
 
 public:

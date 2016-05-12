@@ -46,11 +46,11 @@ Sharpen::controlPanel(){		// create control panel
 	m_sliderFctr = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderFctr->setTickPosition(QSlider::TicksBelow);
 	m_sliderFctr->setTickInterval(10);
-	m_sliderFctr->setRange(-100, 100); // range of slider - 256 to 256
+	m_sliderFctr->setRange(0, 100); // range of slider - 256 to 256
 	m_sliderFctr->setValue(0);
 	// spinbox
-	m_spinBoxFctr = new QDoubleSpinBox(m_ctrlGrp);
-	m_spinBoxFctr->setRange(0.25, 10.0); // range of slider - 256 to 256
+	m_spinBoxFctr = new QSpinBox(m_ctrlGrp);
+	m_spinBoxFctr->setRange(0, 100); // range of slider - 256 to 256
 	m_spinBoxFctr->setValue(0);
 
 	connect(m_sliderXsz, SIGNAL(valueChanged(int)), this, SLOT(changeXsz(int)));
@@ -60,7 +60,7 @@ Sharpen::controlPanel(){		// create control panel
 	connect(m_spinBoxYsz, SIGNAL(valueChanged(int)), this, SLOT(changeYsz(int)));
 
 	connect(m_sliderFctr, SIGNAL(valueChanged(int)), this, SLOT(changeFctr(int)));
-	connect(m_spinBoxFctr, SIGNAL(valueChanged(double)), this, SLOT(changeFctrD(double)));
+	connect(m_spinBoxFctr, SIGNAL(valueChanged(int)), this, SLOT(changeFctr(int)));
 
 	connect(m_coupleSZ, SIGNAL(stateChanged(int)), this, SLOT(changeCouple(int)));
 
@@ -86,8 +86,9 @@ Sharpen::controlPanel(){		// create control panel
 
 }
 
+/*this function returns sharpened image*/
 void
-Sharpen::getSharp(ImagePtr I1, int xsz,int ysz, double fctr, ImagePtr I2){
+Sharpen::getSharp(ImagePtr I1, int xsz,int ysz, int fctr, ImagePtr I2){
 
 	Blur::getBlur(I1, xsz, ysz, I2);
 
@@ -103,9 +104,8 @@ Sharpen::getSharp(ImagePtr I1, int xsz,int ysz, double fctr, ImagePtr I2){
 
 		for (endd = p1 + total; p1 < endd;) {
 			val= *p1 - *p2; // diff to orgnal picture to blurred
-			val= (int)(val * fctr); // multiply by factor
+			val= CLIP((val * fctr),0,MXGRAY-1); // multiply by factor
 			*p2 = CLIP(val + *p1, 0, MXGRAY - 1); // add to input
-
 			p1++; p2++;
 		}
 	}
@@ -117,7 +117,7 @@ Sharpen::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
 	int xsz = m_sliderXsz->value();
 	int ysz = m_sliderYsz->value();
-	double fctr = m_spinBoxFctr->value();
+	int fctr = m_spinBoxFctr->value();
 
 	getSharp(I1,xsz,ysz,fctr, I2);
 
@@ -186,7 +186,7 @@ Sharpen::reset(){
 void
 Sharpen::changeXsz(int xsz){
 	if (xsz % 2 == 0 && xsz > 0){ // maintain odd
-		if (xsz >= m_sliderXsz->value() || xsz >= m_spinBoxXsz->value())	xsz++; // if increasing increase
+		if (xsz >= m_sliderXsz->value() && xsz >= m_spinBoxXsz->value())	xsz++; // if increasing increase
 		else
 			xsz--;
 	}
@@ -288,17 +288,14 @@ Sharpen::changeCouple(int){
 		return;
 }
 
-
 void
 Sharpen::changeFctr(int fctr){
-	double c = fctr;
-	c = getFctr(c);
 
 	m_sliderFctr->blockSignals(true);
 	m_spinBoxFctr->blockSignals(true);
 
 	m_sliderFctr->setValue(fctr);
-	m_spinBoxFctr->setValue(c);
+	m_spinBoxFctr->setValue(fctr);
 
 	m_sliderFctr->blockSignals(false);
 	m_spinBoxFctr->blockSignals(false);
@@ -311,28 +308,3 @@ Sharpen::changeFctr(int fctr){
 	g_mainWindowP->displayOut();
 
 }
-
-void
-Sharpen::changeFctrD(double c){
-	// set factr from 1/4 to 5, to -100 to 100
-	if (c == 1) changeFctr(0);
-	if (c > 1)
-		c = ((c - 1.0) *25.0);
-	else
-		c = ((c - 1) * 133);
-
-	int ctr = (int)c;
-	changeFctr(ctr);
-}
-
-double
-Sharpen::getFctr(double c){
-	// set contrast to 1/4 to 5, from -100 to 100
-
-	if (c >= 0)
-		c = c / 25.0 + 1.0;
-	else
-		c = 1.0 + c / 133.;
-	return c;
-}
-

@@ -240,8 +240,6 @@ Blur::applyFilter(ImagePtr I1, ImagePtr I2){
 
 void
 Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
-	ImagePtr temp;
-	IP_copyImageHeader(I1, temp);  // copys width height and other properties from i1 to i2
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
 	int w = I1->width();  // input image
 	int h = I1->height();
@@ -256,10 +254,11 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 
 	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++){
 
-		IP_getChannel(temp, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+		IP_getChannel(I2, ch, p2, type); // gets channel 0 1 or 2 (r, g ,b) array 
 		
 		// for row
 		for (int i = 0; i < h;++i){ // go from top row to bottom
+
 			// now get 1d blur of pixel width w, step 1, and neighborhood xsz
 			getBlur_1D(p1, w, 1, xsz, p2);
 			p1+=w; // go to next row
@@ -300,7 +299,7 @@ Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::C
 	uint16_t * buffer;
 
 	// allocate memory
-	buffer = (uint16_t *)malloc(sizeof(uint16_t*)*buffer_size);
+	buffer = (uint16_t *)malloc(sizeof(uint16_t)*buffer_size);
 	if (buffer == NULL) exit(0);
 	
 	// add val to front buffer, it is low(half (neighborehood size/2))
@@ -308,7 +307,7 @@ Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::C
 	for (; i < extra; ++i) 	buffer[i]=(*p1);
 
 	// copy row or column, step point by steps
-	width += i;
+	width += extra; 
 	for (; i < width; ++i) {
 		buffer[i] = (*p1);
 		p1 += steps;
@@ -317,7 +316,7 @@ Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::C
 	p1 -= steps; // go back to pointer end
 
 	// add val to end
-	extra += i;
+	extra += width;
 	for (; i < extra; ++i) buffer[i]=(*p1);
 
 	// now find sum
@@ -325,8 +324,9 @@ Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::C
 
 	// do front 1st
 	i = 0;
-	for (; i < size; i++) 
+	for (; i < size; i++) {
 		sum += buffer[i];
+	}
 	*p2= sum / size;
 
 	// go to next step

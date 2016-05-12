@@ -60,9 +60,7 @@ token::operator = (const token& t){
 	return *this;
 
 }
-token::~token()
-{
-}
+
 void 
 token::print(){
 	std::cout << token_name_string[name] << "\t";

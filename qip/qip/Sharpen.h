@@ -13,19 +13,17 @@ public:
 		bool				applyFilter(ImagePtr, ImagePtr);// apply filter to input to init output
 		void				disable(bool);
 		void				reset();
-		double				getFctr(double);
 
 protected slots:
-	void changeFctrD(double);  // for slider
-	void changeFctr(int);	// for spinbox
+	void			changeFctr(int);	// for spinbox
 
-	void changeXsz(int);
-	void changeYsz(int);
+	void			changeXsz(int);
+	void			changeYsz(int);
 
-	void changeCouple(int);
+	void			changeCouple(int);
 
 protected:
-	void		getSharp(ImagePtr I1, int xsz,int ysz, double fctr, ImagePtr I2);
+	void		getSharp(ImagePtr I1, int xsz,int ysz, int fctr, ImagePtr I2);
 private:
 	QGroupBox	*m_ctrlGrp;			// groupbox for panel
 
@@ -35,7 +33,7 @@ private:
 	QSpinBox	*m_spinBoxYsz;
 
 	QSlider			*m_sliderFctr;		// x size slider
-	QDoubleSpinBox	*m_spinBoxFctr;
+	QSpinBox		*m_spinBoxFctr;
 
 	QCheckBox	*m_coupleSZ;
 

@@ -1,9 +1,8 @@
 ﻿import numpy as np
 from store import *
 import time
-import matplotlib.pyplot as plt
-
-
+import random
+#import matplotlib.pyplot as plt
 
 event_list=[]
 store_list=[]
@@ -35,30 +34,52 @@ def get_stock_to_refill(store1):
 
 def refill_go(curr_event):
     store_list[curr_event.name].manager_contacted =True
-
-    time = get_time_high(curr_event.name)
-
+    
     # here current name is store name
-    store_index = get_upper_store(curr_event.name)
+    store_index = get_upper_store(curr_event.curr_store.name)
 
     stock  = get_stock_to_refill(curr_event.name)
     curr_event.stock_takable = stock
 
+    t = random.expovariate( get_time_high(curr_event.curr_store.name))
 
     # if store index is 0 just have double the travel time and return
     # warehouse has infinite stock and 0 queue
     if store_index < 0:
-        curr_event.update("Returned from Refill", refill_return , CLOCK+2*time)
+        curr_event.update("Returned from Refill", refill_return , CLOCK+2*t)
         event_list.append(curr_event)
 
     else:        
         # if not go to upper store
         curr_event.store = store_list[store_index]
-        curr_event.update("Reached Refill", shelf_arrive, CLOCK+2*time)
+        curr_event.update("Reached Refill", shelf_arrive, CLOCK+t)
         event_list.append(curr_event)
 
+def refill_take(curr_event):
+    # if current customer is refiller not 
+    #if current event is refill # need to do stuff here
+    # if there is not enough stock send upstream
+    random.seed()
+    t = get_time_high(curr_event.curr_store.name)
+
+    t = CLOCK+random.expovariate(t)
+    t2=0
+
+    i =curr_store.name
+    while (i!=curr_store.name):
+        t2 += random.expovariate(get_time_low(i))
+        i-=1
+
+    # this is refill event
+    if curr_event.stock_take() is True:
+        curr_event.update("Refill Return", refill_return ,CLOCK+t2)
+    else:
+        curr_event.update("Refill upwards", refill_go ,CLOCK+t)
+
 def refill_return(curr_event):
+
     restock_time.append(CLOCK)
+
     #set the store to be same as name
     curr_event.curr_store = store_list[curr_event.name]
 
@@ -68,75 +89,104 @@ def refill_return(curr_event):
 
     # set the refill flag off
     store_list[curr_event.name].manager_contacted =False  
-
-    # release queue does same thing as clerk exit but not update stastic
-    #set clerk status not busy
-    curr_event.set_clerk_status(NOT_BUSY)
-
-    # add event to the shelf queue of stor    # store exit time
-    delay_time.append(CLOCK  - curr_event.arrival_time)
-    exit_order.append(curr_event.name)
-
-    # send next clerk queue event to event list if there is a queue
-    if (len(curr_event.curr_store.curr_clerk_queue)>0):
-        event_next = curr_event.clerk_next_queue()
-        # only need to change time
-        event_next.time = CLOCK+1 / CLERK_RATE
-        event_list.append(event_next)  
       
-
-
 def clerk_arrive(curr_event):
+    #free shelf
+    curr_event.set_shelf_status(NOT_BUSY)
+    random.seed()
     temp =curr_event.get_clerk_status()
+    # free shelf
+    t =random.expovariate(CLERK_RATE)
     if temp is NOT_BUSY:
-        curr_event.update("CLERK EXIT", clerk_exit ,CLOCK+1/CLERK_RATE)
-        event_list.append(curr_event)
+        curr_event.update("CLERK EXIT", clerk_exit ,CLOCK+t)
+
         #now set the shelf busy which will be not busy when shelf exit is executed
         curr_event.set_clerk_status(BUSY)
-    else:
-        curr_event.clerk_add_queue(curr_event)
 
+        #now update time in store  so that i can calculate time for net costumer
+        if  curr_event.curr_store.clerk_exit_time is 0:
+
+            # if clock is not set at first then next shelf arrival from queue to system is clock + random
+            curr_event.curr_store.clerk_exit_time = CLOCK +t
+        if (curr_event.curr_store.curr_clerk_queue != 0):
+            curr_event.curr_store.curr_clerk_queue-=1
+    else:
+        # add event to the shelf queue of store, 1 stuff is still in system
+        curr_event.curr_store.curr_clerk_queue+=1
+
+        # update next shelf exit time
+        curr_event.curr_store.clerk_exit_time+=t
+
+        #set the execution time of this event to be at next shelf exit time 
+        curr_event.time = curr_event.curr_store.clerk_exit_time
+
+    #send modified event to event list
+    event_list.append(curr_event)
+ 
 def shelf_arrive(curr_event):
+    random.seed()
 
     # now check if shelf is free
-    temp =curr_event.get_shelf_status()
-    if temp is NOT_BUSY:
-        if curr_event.stock_take() is True:
-            if curr_event.refill is True:
-                
-                # this is refill event
-                t =get_time_high(curr_event.name)
-                curr_event.update("Refill Return", refill_return ,CLOCK+t)
+    Current_status =curr_event.get_shelf_status()
+    t = random.expovariate(SHELF_RATE)
 
-            else:
-                # now spend shelf_rate time 
-                curr_event.update("SHELF EXIT", shelf_exit ,CLOCK+1/SHELF_RATE)
-                event_list.append(curr_event)
+    if Current_status is NOT_BUSY:
+        # check stock and if successfully taken it returns true
+        if curr_event.stock_take() is True:
                 #now set the shelf busy which will be not busy when shelf exit is executed
                 curr_event.set_shelf_status(BUSY)
+
+                #now update time in store  so that i can calculate time for net costumer
+                if  curr_event.curr_store.shelf_exit_time is 0:
+
+                    # if clock is not set at first then next shelf arrival from queue to system is clock + random
+                    curr_event.curr_store.shelf_exit_time = CLOCK +t
+
+                # send next shelf queue event to event list if there is a queue
+                if (curr_event.curr_store.curr_shelf_queue>0):
+                    curr_event.curr_store.curr_shelf_queue-=1
+
+
+                # this will get to clerk at clock + t time 
+                curr_event.update("CLERK ARRIVE", clerk_arrive ,CLOCK+t)
+                # curr_event.execute() #it happens immediately, just to print it out i call execute
+                
+                # put modified event to list
+                event_list.append(curr_event)   
+
+                # generate next arrival add arrival to list
+                generate_arrival_event()  
+                return
+
         else:
             # else if there is no more stock
-            # add event to the shelf queue of store
-            curr_event.shelf_add_queue(curr_event)
-
-            #now create new event
+            #now create new event checking if stock is called to be refilled
             if curr_event.curr_store.manager_contacted is False:
                 # create restock event
                 curr_event.curr_store.manager_contacted =True
+                # this will also change next shelf time for current store
                 evn = event(curr_event.curr_store.name,curr_event.curr_store,refill_go, CLOCK)
                 evn.type = "Refill Left"
+                
+                # to print out info do execute   sane refill_go(curr_event)
                 evn.execute(CLOCK)
-    else:
-        # add event to the shelf queue of store
-        curr_event.shelf_add_queue(curr_event)
-   
-    # generate next arrival
-    # generate customer, it will add arrival to list
-    generate_arrival_event()  
 
+    # add event to the shelf queue of store, 1 stuff is still in system
+    curr_event.curr_store.curr_shelf_queue+=1
+
+    # update next shelf exit time
+    curr_event.curr_store.shelf_exit_time+=t
+
+    #set the execution time of this event to be at next shelf exit time 
+    curr_event.time = curr_event.curr_store.shelf_exit_time
+
+    # put modified event to list
+    event_list.append(curr_event)   
+
+    # generate next arrival  and add to list
+    generate_arrival_event()  
  
 def clerk_exit(curr_event):
-
     #set clerk status not busy
     curr_event.set_clerk_status(NOT_BUSY)
 
@@ -145,72 +195,51 @@ def clerk_exit(curr_event):
     exit_order.append(curr_event.name)
 
     # send next clerk queue event to event list if there is a queue
-    if (len(curr_event.curr_store.curr_clerk_queue)>0):
-        event_next = curr_event.clerk_next_queue()
-        # only need to change time
-        event_next.time = CLOCK+1 / CLERK_RATE
-        event_list.append(event_next)  
-
-def shelf_exit(curr_event):
-    # since it is exiting now shelf is not busy
-    curr_event.set_shelf_status(NOT_BUSY)
-
-    # send this event to event list for clerk
-    clerk_arrive(curr_event)
-
-    # send next shelf queue event to event list if there is a queue
-    if (len(curr_event.curr_store.curr_shelf_queue)>0):
-        event_next = curr_event.shelf_next_queue()
-        # only need to change time
-        event_next.time = CLOCK+1 / SHELF_RATE
-        event_list.append(event_next)
-
+    if (curr_event.curr_store.curr_clerk_queue>0):
+        curr_event.curr_store.curr_clerk_queue-=1
 
 def generate_arrival_event():
+    global event_list
     global CUSTOMERS
-    np.random.seed()
-    r = np.random.uniform(0.0001, 1.0)
+    random.seed()
+    r = random.uniform(0.0,1.0)
 
     for i in range(len(store_weight)):
         if (r < store_weight[i]):
-            t = r*2.0/CUSTOMER_ARRIVAL_RATE
-
+            t = random.expovariate(CUSTOMER_ARRIVAL_RATE)
             # send customer to shelf
             #where they will meet a queue or free shelf                             
             event_list.append(event(CUSTOMERS,store_list[i], shelf_arrive, CLOCK + t))
             enter_time.append(CLOCK + t)
             CUSTOMERS+=1
-            break;
-
-
+            break
 
 def customer_arrivals(MAX_CLOCK):
-    global CLOCK
-    np.random.seed( 99999)
+    global CLOCK 
+    global CUSTOMERS
+
     CUSTOMERS=1
     # print("new customer\n")
     CLOCK = 0
-    
-    # generate customer, it will add arrival to list
     generate_arrival_event()  
-
+    
+    # generate customer, it will add arrival to list    
     """Create new customers until the sim time reaches Max."""
     while (CLOCK < MAX_CLOCK):
 
         next_event = 0
-        if len(event_list) is 0:
-            generate_arrival_event()  
+        x = len(event_list) 
 
-        next_event_time = event_list[0].time
+        next_event_time = event_list[next_event].time
 
         #check if this time is smaller than next event if so got to next event
-        for i in range(len(event_list)):
+        for i in range(x):
             if event_list[i].time < next_event_time:
                 next_event_time = event_list[i].time
                 next_event = i
              
         #increment clock
-        CLOCK = next_event_time;
+        CLOCK = next_event_time       
 
         # if next event is to execute events then execute
         # execute next event 
@@ -227,22 +256,23 @@ for i in range(len(store_weight)):
     store_list.append(store(i))
     
 customer_arrivals(10) 
-x = np.linspace(1,len(enter_time)+1,len(enter_time))     # customer # starts at 1 and ends 1 step above
-
-num_exited=len(delay_time)
-y =np.linspace(1,num_exited,num_exited)
-
-num_restock = len(restock_time)
-z =   np.linspace( 1,num_restock,num_restock)
-                             
 avg_delay =   sum(delay_time)/len(delay_time)
 print("average delay is %f"%(avg_delay))
 
-for i in range(len(exit_order)):
-    exit_time.append(enter_time[exit_order[i]]+delay_time[i])
+#x = np.linspace(1,len(enter_time)+1,len(enter_time))     # customer # starts at 1 and ends 1 step above
 
-plt.scatter(restock_time, z)
-plt.scatter(x,enter_time,c='red',marker =3)
-plt.scatter(exit_order ,exit_time, c ='magenta'  ,  marker =3)
+#num_exited=len(delay_time)
+#y =np.linspace(1,num_exited,num_exited)
 
-plt.show()
+#num_restock = len(restock_time)
+#z =   np.linspace( 1,num_restock,num_restock)
+                             
+
+##for i in range(len(exit_order)):
+#    exit_time.append(enter_time[exit_order[i]]+delay_time[i])
+
+#plt.scatter(restock_time, z)
+#plt.scatter(x,enter_time,c='red',marker =3)
+#plt.scatter(exit_order ,exit_time, c ='magenta'  ,  marker =3)
+
+#plt.show()

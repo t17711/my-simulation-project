@@ -95,6 +95,8 @@ private:
 	QAction*		m_actionHistStretch;
 	QAction*		m_actionHistEqualize;
 	QAction*		m_actionHistMatch;
+
+	// neighborhood options
 	QAction*		m_actionBlur;
 	QAction*		m_actionSharpen;
 	QAction*		m_actionMedian;

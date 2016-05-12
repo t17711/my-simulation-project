@@ -5,12 +5,12 @@ QUEUE_LIMIT=2000
 NEXT_TIME=0.0
 SHELF_NUMBER = 1
 # for 1 item
-CUSTOMER_ARRIVAL_RATE = 0.5*SHELF_NUMBER*(60) # 1 PER MIN
-SHELF_CAPACITY = 500
-SHELF_RATE = SHELF_NUMBER*(20)*60  # # PER MIN
+CUSTOMER_ARRIVAL_RATE = SHELF_NUMBER*(60/2) # 2 PER 10 MIN
+SHELF_CAPACITY = 100
+SHELF_RATE = 10*SHELF_NUMBER*(60)
 
 CLERK_NUMBER = 4
-CLERK_RATE = 1*60 # 1 PER MIN
+CLERK_RATE = 20*CLERK_NUMBER # 1 PER MIN
 
 SHELF_NUMBER = 1
 
@@ -95,35 +95,32 @@ class event:
         return temp
 
 class shelf:
-    def __init__(self,num):
-        self.store_name = num
+    def __init__(self):
         self.self_capacity = SHELF_CAPACITY
         self.stock = SHELF_CAPACITY
         #every shelf has a queue
-        self.status= NOT_BUSY;
-
+        self.status= NOT_BUSY
 
 class clerk:
-    def __init__(self,num,clerk_num):
+    def __init__(self,clerk_num):
         self.name = clerk_num
-        self.store_name = num
-        self.self_capacity = SHELF_CAPACITY
-        self.stock = SHELF_CAPACITY
-        self.status= NOT_BUSY;
-       
+        self.status= NOT_BUSY
 
 class store:
     def __init__(self,num):
         self.name =  num
         # for stock
-        self.curr_shelf = shelf(num)
+        self.curr_shelf = shelf()
         self.curr_clerk = []
-        self.curr_clerk_queue =[]
-        self.curr_shelf_queue =[]
+        self.curr_clerk_queue =0
+        self.curr_shelf_queue =0
         self.manager_contacted = False
 
+        self.shelf_exit_time = 0
+        self.clerk_exit_time = 0
+
         for i in range(CLERK_NUMBER):
-                self.curr_clerk.append(clerk(num,i))
+                self.curr_clerk.append(clerk(i))
     
     def restock(self, val):
         self.curr_shelf.stock = val
@@ -131,6 +128,6 @@ class store:
 
     def print_s(self):
         print("Cureent store name is %d, the Shelf queue is %d, the Clerk queue is %d, stock is %d\n"
-        % (self.name, len(self.curr_shelf_queue), len(self.curr_clerk_queue), self.curr_shelf.stock))
+        % (self.name,self.curr_shelf_queue, self.curr_clerk_queue, self.curr_shelf.stock))
     
    

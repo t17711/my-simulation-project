@@ -22,7 +22,7 @@ public:
 									int xsz ,int ysz, int w, int avg);
 		void				get_med_Hist(ChannelPtr<uchar> p2,
 										std::deque < uchar* > buffer,
-										int xsz, int ysz, int w);
+										int xsz, int ysz, int w,int avg);
 
 protected:
 	void		getMedian(ImagePtr I1, int xsz,int ysz, int avg, ImagePtr I2);
@@ -49,7 +49,7 @@ private:
 	QCheckBox		*m_combinexy;
 	QCheckBox		*m_HistMedian;
 
-	QTextEdit			*m_clock;
+	//QTextEdit			*m_clock;
 
 	uchar* 		getRowBuff(ChannelPtr<uchar> p1, int width, int pad);
 };

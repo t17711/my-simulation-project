@@ -24,11 +24,19 @@
 	tk(op_neg)\
 	tk(op_print)\
 	tk(op_printc)\
+	tk(op_or)\
+	tk(op_greater)\
+	tk(op_greater_eql)\
+	tk(op_less)\
+	tk(op_less_eql)\
+	tk(op_eql)\
+	tk(op_pushb)\
+	tk(op_jfalse)\
+	tk(op_placeholder)\
 
 enum code_tk {
 for_tk_op(GENERATE_ENUM)
 };
-
 
 static const char *code_tk_string[] = {
 	for_tk_op(GENERATE_STRING)
@@ -73,7 +81,15 @@ static const char *code_tk_string[] = {
 	tk2(TK_STRING_DEF)\
 	tk2(TK_RETURN)\
 	tk2(TK_PRINT) \
-	
+	tk2(TK_OR)\
+	tk2(TK_EQUAL_COMP)\
+	tk2(TK_AND)\
+	tk2(TK_DO)\
+	tk2(TK_TRUE)\
+	tk2(TK_FALSE)\
+	tk2(TK_NOT)\
+
+
 	
 	enum token_name {
 		for_tk_name(GENERATE_ENUM)
@@ -93,8 +109,6 @@ public:
 	token(const token_name&, const int&, const int&);
 	token&  operator = (const token& t);
 	
-
-	~token();
 	void print();
 public:
 	token_name name;
