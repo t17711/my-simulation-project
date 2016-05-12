@@ -203,12 +203,20 @@ parser::statment_types(){
 	case TK_DO:
 		do_while();
 		break;
+	case TK_WHILE:
+		m_while();
+		break;
+	case TK_IF:
+		m_if();
+		break;
 	case TK_END:
 		return;
 	default:
 		error(" bad statement", " " , " ");
 	}
-
+	// now go check if there are more statements
+	statment_types();
+	// need to do calculator here
 }
 
 // this assigns value to a variable
@@ -229,9 +237,6 @@ parser::assignment(){
 	gen_op_code(op_pop);
 	gen_address(addr);
 	
-	// now go check if there are more statements
-	statment_types();
-	// need to do calculator here
 
 }
 
@@ -241,6 +246,8 @@ parser::expression(){
 	expression_mul_div();
 	add_sub();
 }
+
+
 // addition, subtraction
 void
 parser::add_sub(){
@@ -470,7 +477,6 @@ parser::print(){
 	}
 	match(TK_CLOSE);
 	match(TK_SEMICOLON);
-	statment_types();
 }
 
 // do while loop
@@ -479,21 +485,64 @@ void parser::do_while(){
 	int target = ip;
 	statements();
 	match(TK_WHILE);
-	conditions(target);
-	match(TK_SEMICOLON);
 
+	expression();
+	gen_op_code(op_jtrue);
+	gen_address(target);
+
+	match(TK_SEMICOLON);
 	// now go check if there are more statements
 	statment_types();
-	// need to do calculator here
-
 }
 
-void parser::conditions(int target){
+//while
+void parser::m_while(){
+	match(TK_WHILE);
+	
+	// for jump 
+	int cond = ip;
 	expression();
 	gen_op_code(op_jfalse);
-	gen_address(target);
+
+	// save place for jfalse addr that is not compolete yet
+	int hole = ip;
+	gen_address(10);
+
+	statements();
+
+	gen_op_code(op_jmp);
+	gen_address(cond);
+
+	// fill hole of jfalse
+	int save = ip;
+	ip = hole;
+	gen_address(save);
+	ip = save;
+
 }
 
+void parser::m_if(){
+	match(TK_IF);
+
+	// for jump 
+	expression();
+	gen_op_code(op_jfalse);
+
+	// save place for jfalse addr that is not compolete yet
+	int hole_if = ip;
+	gen_address(10);
+	statements();
+
+	/// do else elseif here
+
+
+
+	// fill hole of jfalse
+	int save = ip;
+	ip = hole_if;
+	gen_address(save);
+	ip = save;
+}
 // this checks and increments current token position
 void
 parser::match(token_name t){
@@ -515,38 +564,44 @@ void
 parser::code_print(){
 	code_tk t;
 	ip = 0;
-
 	while (*(code_tk*)(code + ip) != op_eof){
+		std::cout << "address:  " << ip << "\t";
 		t = *(code_tk*)(code + ip);
 		ip += sizeof(code_tk);
 
 		if (t == op_pushi ||
 			t == op_pop ||
 			t == op_push ||
-			t == op_jfalse
+			t == op_jfalse ||
+			t == op_jmp||
+			t ==op_jtrue
 			){
 			int addr = *(int*)(code + ip);
-			std::cout << code_tk_string[t] << "\t\t" << addr << std::endl;
+			std::cout << code_tk_string[t]<< std::endl;
+			std::cout << "address:  " << ip << " " << addr << std::endl;
 			ip += sizeof(int);
 			continue;
 		}
 		if (t == op_printc || t == op_pushc){
-			char addr = *(char*)(code + ip);
-			std::cout << code_tk_string[t] << "\t\t" << addr << std::endl;
+			char addr = *(code + ip);
+			std::cout << code_tk_string[t] << std::endl;
+			std::cout << "address:  " << ip << "\t\t";
+			std::cout<<addr<<std::endl;
 			ip += sizeof(char);
 			continue;
 
 		}
 		if (t == op_pushf){
 			float addr = *(float*)(code + ip);
-			std::cout << code_tk_string[t] << "\t\t";
-			printf("%f\n",addr);
+			std::cout << code_tk_string[t] << std::endl;
+			std::cout << "address:  " << ip << "\t\t" << addr << endl;
 			ip += sizeof(float);
 			continue;
 		}
 		if (t == op_pushb){
 			bool addr = *(bool*)(code + ip);
-			std::cout << code_tk_string[t] << "\t\t";
+			std::cout << code_tk_string[t] << std::endl;
+			std::cout << "address:  " << ip << "\t\t";
 			if (addr)
 				printf("true \n");
 			else

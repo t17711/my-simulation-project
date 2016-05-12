@@ -34,6 +34,7 @@ public:
 	int eql();
 	int pushb();
 	int jfalse();
+	int jtrue();
 
 
 public:

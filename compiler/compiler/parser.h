@@ -53,8 +53,8 @@ public:
 	// do while statement
 	void do_while();
 	void m_while();
-	void conditions(int target);
-
+	// if statement
+	void m_if();
 	// this is for print statement
 	void print();
 	// this gives the type if token is type tokwen

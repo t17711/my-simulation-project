@@ -5,8 +5,8 @@ QUEUE_LIMIT=2000
 NEXT_TIME=0.0
 SHELF_NUMBER = 1
 # for 1 item
-CUSTOMER_ARRIVAL_RATE = SHELF_NUMBER*(60/2) # 2 PER 10 MIN
-SHELF_CAPACITY = 100
+CUSTOMER_ARRIVAL_RATE = SHELF_NUMBER*(60) # 2 PER 10 MIN
+SHELF_CAPACITY = 1000
 SHELF_RATE = 10*SHELF_NUMBER*(60)
 
 CLERK_NUMBER = 4
@@ -17,14 +17,13 @@ SHELF_NUMBER = 1
 RESTOCKING = False
 class event:
     def __init__(self,CUSTOMERS,store, funct, time):
-        self.type = "STORE"
+        self.type = "ENTERED STORE"
         self.name = CUSTOMERS
         # what is the event that has to happen here
         self.function = funct
         self.curr_store =  store
         self.arrival_time = time
         self.time = time
-        self.clerk = -1
         self.stock_takable=1
         self.refill= False
 
@@ -49,50 +48,21 @@ class event:
         self.type =type
         self.function = funct
         self.time = time
-
-    def clerk_add_queue(self,event_t):
-        self.curr_store.curr_clerk_queue.append(event_t)
-        if len(self.curr_store.curr_clerk_queue) >QUEUE_LIMIT:
-            print("%d store CLERK queue exceeded limit"%(self.curr_store.name) )
-            exit(0)
-
-    def shelf_add_queue(self,event_t):
-        self.curr_store.curr_shelf_queue.append(event_t)
-        if len(self.curr_store.curr_shelf_queue) >QUEUE_LIMIT:
-            print("%d SHELF shelf queue exceeded limit"%(self.curr_store.name) )
-            exit(0)
-                
-
     
     def set_shelf_status(self,val):
         self.curr_store.curr_shelf.status = val
 
     def set_clerk_status(self,val):
-        self.curr_store.curr_clerk[self.clerk].status = val
+        self.curr_store.curr_clerk.status = val
 
     def get_clerk_status(self):
         # if busy dont return
-        # single queue for all clerk so return the whole list
-
-        for i in range(len(self.curr_store.curr_clerk)):
-            if self.curr_store.curr_clerk[i].status is NOT_BUSY:
-                self.clerk = i
-                return  NOT_BUSY
-        return BUSY
+        return self.curr_store.curr_clerk.status
 
     def get_shelf_status(self):            
         return self.curr_store.curr_shelf.status
 
 
-    def shelf_next_queue(self):
-        temp = self.curr_store.curr_shelf_queue[0]
-        self.curr_store.curr_shelf_queue.pop(0)
-        return temp
-
-    def clerk_next_queue(self):
-        temp = self.curr_store.curr_clerk_queue[0]
-        self.curr_store.curr_clerk_queue.pop(0)
-        return temp
 
 class shelf:
     def __init__(self):
@@ -102,8 +72,7 @@ class shelf:
         self.status= NOT_BUSY
 
 class clerk:
-    def __init__(self,clerk_num):
-        self.name = clerk_num
+    def __init__(self):
         self.status= NOT_BUSY
 
 class store:
@@ -111,17 +80,14 @@ class store:
         self.name =  num
         # for stock
         self.curr_shelf = shelf()
-        self.curr_clerk = []
+        self.curr_clerk = clerk()
         self.curr_clerk_queue =0
         self.curr_shelf_queue =0
         self.manager_contacted = False
 
         self.shelf_exit_time = 0
         self.clerk_exit_time = 0
-
-        for i in range(CLERK_NUMBER):
-                self.curr_clerk.append(clerk(i))
-    
+   
     def restock(self, val):
         self.curr_shelf.stock = val
 

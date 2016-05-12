@@ -114,6 +114,8 @@ public:
 		key_table["TRUE"] = TK_TRUE;
 		key_table["FALSE"] = TK_FALSE;
 		key_table["NOT"] = TK_NOT;
+		key_table["IF"] = TK_IF;
+		key_table["ELSE"] = TK_ELSE;
 
 	}
 

@@ -1730,7 +1730,31 @@ int execute::pos(){
 	ip += sizeof(code_tk);
 	return 1;
 }
+int execute::jtrue(){
+	ip += sizeof(code_tk);
+	int pos = *(int*)(code + ip);
+	ip += sizeof(int);
 
+	// go to bool
+	is -= sizeof(char);
+	char type = *(stack + is);
+
+	if (type != 'B'){
+		error(" bad condition for loop ", type, "not boolean");
+		exit(0);
+	}
+
+	// go to bool
+	is -= sizeof(char);
+	bool val = *(bool*)(stack + is);
+
+	// if stack has true
+	if (!val){
+		return 1;
+	}
+	ip = pos;
+	return 1;
+}
 int execute::jfalse(){
 	ip += sizeof(code_tk);
 	int pos = *(int*)(code + ip);
@@ -1751,8 +1775,8 @@ int execute::jfalse(){
 
 	// if stack has true
 	if (val){
-		ip = pos;
+		return 1;
 	}
-
+	ip = pos;
 	return 1;
 }

@@ -32,6 +32,7 @@
 	tk(op_eql)\
 	tk(op_pushb)\
 	tk(op_jfalse)\
+	tk(op_jtrue)\
 	tk(op_placeholder)\
 
 enum code_tk {
@@ -88,6 +89,8 @@ static const char *code_tk_string[] = {
 	tk2(TK_TRUE)\
 	tk2(TK_FALSE)\
 	tk2(TK_NOT)\
+	tk2(TK_IF)\
+	tk2(TK_ELSE)\
 
 
 	
