@@ -6,8 +6,8 @@ NEXT_TIME=0.0
 SHELF_NUMBER = 1
 # for 1 item
 CUSTOMER_ARRIVAL_RATE = SHELF_NUMBER*(60) # 2 PER 10 MIN
-SHELF_CAPACITY = 1000
-SHELF_RATE = 10*SHELF_NUMBER*(60)
+SHELF_CAPACITY = 10
+SHELF_RATE = SHELF_NUMBER*(50)
 
 CLERK_NUMBER = 4
 CLERK_RATE = 20*CLERK_NUMBER # 1 PER MIN
@@ -26,6 +26,8 @@ class event:
         self.time = time
         self.stock_takable=1
         self.refill= False
+        self.in_clerk =False
+        self.in_shelf = True
 
     def execute(self,CLOCK):
         print("TIME: %f, Customer %d reached %s"%(CLOCK, self.name, self.type))

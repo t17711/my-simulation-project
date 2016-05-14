@@ -1,6 +1,6 @@
 #pragma warning(disable:4996)
 
-#include "scanner.cpp"
+#include "scanner.h"
 #include "parser.h"
 #include "execute.h"
 
@@ -50,7 +50,10 @@ typedef int (execute::*Function) ();
 	   &execute::eql,
 	   &execute::pushb,
 	   &execute::jfalse,
-	   &execute::jtrue
+	   &execute::jtrue,
+	   &execute::dup,
+	   &execute::remove
+
 
    };
 

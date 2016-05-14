@@ -158,6 +158,20 @@ parser::type(){
 	case TK_FLOAT_DEF:
 		match(TK_FLOAT_DEF);
 		return 'F';
+	// now for literals dont match 
+	case TK_CHAR:
+		return 'C';
+	case TK_INT:
+		return 'I';
+	case TK_BOOL:
+		return 'B';
+	case TK_STRING:
+		return 'S';
+	case TK_FLOAT:
+		return 'F';
+	// for id look at symbol table
+	case TK_ID:
+		return stack->type(token_list[currtoken]->id);
 	default:
 		error(" no type found"," ", " ");
 		return 't';
@@ -209,10 +223,20 @@ parser::statment_types(){
 	case TK_IF:
 		m_if();
 		break;
+	case TK_SWITCH:
+		m_switch();
+		break;
 	case TK_END:
 		return;
+		// for switch case statements
+	case TK_CASE:
+		return;
+	case TK_DEFAULT:
+		return;
+
 	default:
 		error(" bad statement", " " , " ");
+		exit(0);
 	}
 	// now go check if there are more statements
 	statment_types();
@@ -521,6 +545,7 @@ void parser::m_while(){
 
 }
 
+// if statement
 void parser::m_if(){
 	match(TK_IF);
 
@@ -532,16 +557,96 @@ void parser::m_if(){
 	int hole_if = ip;
 	gen_address(10);
 	statements();
+	int save;
+	token_name curr = token_list[currtoken]->name;
+	if (curr == TK_ELSE){
+		// create jump for if if is true
+		gen_op_code(op_jmp);
+		int hole = ip;
+		gen_address(0);
 
-	/// do else elseif here
+		// now put jfalse address here
+		save = ip;
+		ip = hole_if;
+		gen_address(save);
+		ip = save;
+		
+		//set the hole to pe parched op_jmp
+		hole_if = hole;
 
+		// now do else
+		match(TK_ELSE);
+		statements();
 
-
+	}
 	// fill hole of jfalse
-	int save = ip;
+	save = ip;
 	ip = hole_if;
 	gen_address(save);
 	ip = save;
+	
+}
+/*************************************************/
+// while statement
+void parser::m_switch(){
+	match(TK_SWITCH);
+	// this looks for expression and type
+
+	value();
+	match(TK_BEGIN);
+	gen_op_code(op_jmp);
+	int first = ip;
+	gen_address(0);
+	// create 2 jmp, 1 jumps over send jum. 2nd jmp jumps over entire switch case,
+	//then if a case is true  i jump over to 2nd jmp
+	int skip = ip;
+	gen_op_code(op_jmp);
+	int second = ip;
+	gen_address(0);
+
+	int temp = ip;
+	ip = first;
+	gen_address(temp);
+	ip = temp;
+
+	token_name curr = token_list[currtoken]->name;
+	while (curr == TK_CASE){
+		match(TK_CASE);
+		// duplicate main value
+		gen_op_code(op_dup);
+		value();
+		match(TK_COLON);
+		// compate values
+		gen_op_code(op_eql);
+		// jump if false
+		gen_op_code(op_jfalse);
+		int hole = ip;
+		gen_address(0);
+
+		statment_types();
+		// since statement is true skip
+		gen_op_code(op_jmp);
+		gen_address(skip);
+
+		int s = ip;
+		ip = hole;
+		gen_address(s);
+		ip = s;
+		curr = token_list[currtoken]->name;
+
+	}
+	if (curr == TK_DEFAULT){
+		match(TK_DEFAULT);
+		match(TK_COLON);
+		statment_types();
+	}
+	int save = ip;
+	ip = second;
+	gen_address(save);
+	ip = save;
+
+	match(TK_END);
+	gen_op_code(op_remove);
 }
 // this checks and increments current token position
 void

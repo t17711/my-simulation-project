@@ -337,21 +337,21 @@ Median::getRowBuff(ChannelPtr<uchar> p1, int width, int pad){
 	// copy leftmost pixel left pad
 	int i = 0;
 	while( i < pad){
-		temp[i]=*p1;
+		*(temp + i)=*p1;
 		++i;
 	}
 
 	// copy row
 	width += i;
 	while( i < width){
-		temp[i]=(*p1++);
+		*(temp + i)=(*p1++);
 		++i;
 	}
 
 	// copy rightmost pixel for right pad
 	pad += i;
 	while (i < pad){
-		temp[i]=(*p1);
+		*(temp + i)=(*p1);
 		++i;
 	}
 
@@ -421,13 +421,13 @@ Median::getMedian(ImagePtr I1, int xsz, int ysz, int avg, ImagePtr I2){
 
 		// get median and pop out values
 		// need to do for last + pad row
-		do{
+		while (p2 < endd2){
 			get_med(p2, buffer, xsz, ysz, w, avg);
 			p2 += w;
 			free(buffer.front());
 			buffer.pop_front();
 			buffer.push_back(getRowBuff(p1, w, xpad));
-		} while (p2 < endd2);
+		} 
 			
 
 	}

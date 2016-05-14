@@ -1,26 +1,9 @@
 #pragma warning(disable:4996)
-#pragma once
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <map>
+#include "scanner.h"
 
-#include "token.h"
 using namespace std;
 
-class scanner{
-public:
-	char *buffer;
-	FILE * pfile;
-	token **token_list;// = new token*[result];
-	size_t result;
-	int i;
-	int j;
-	std::map<string,token_name> key_table;
-	int key_n;
-
-	scanner(){
-
+scanner::scanner(){
 		pfile = fopen("test.txt", "rb"); // rb is read as binary
 		if (!pfile) {
 			error("file opening failed", " ", " ");
@@ -76,13 +59,14 @@ public:
 		//cout << "\nfinish" << endl;
 	}
 
-	~scanner(){
+scanner::~scanner(){
 		fclose(pfile);
 		free(buffer);
 
 	}
 
-	void print(){
+void
+scanner::print(){
 		int t = 0;
 		while (token_list[t]->name != TK_EOF) {
 			token_list[t]->print();
@@ -92,13 +76,15 @@ public:
 		std::cout << std::endl << std::endl;
 	}
 
-	void get_eof()
+void
+scanner::get_eof()
 	{
 		//printf("get_eof");
 		token_list[j]->name = TK_EOF;
 	}
 
-	void get_key_table(){
+void
+scanner::get_key_table(){
 		key_table["CHAR"] = TK_CHAR_DEF;
 		key_table["FOR"] = TK_FOR;
 		key_table["INT"] = TK_INT_DEF;
@@ -116,16 +102,21 @@ public:
 		key_table["NOT"] = TK_NOT;
 		key_table["IF"] = TK_IF;
 		key_table["ELSE"] = TK_ELSE;
+		key_table["SWITCH"] = TK_SWITCH;
+		key_table["CASE"] = TK_CASE;
+		key_table["DEFAULT"] = TK_DEFAULT;
 
 	}
 
-	void check_keyword(token* tk)
+void
+scanner::check_keyword(token* tk)
 	{
 		token_name t = key_table[tk->id];
 		if (t != TK) tk->name = t;
 	}
 
-	void get_token()
+void
+scanner::get_token()
 	{
 		// this is start of a token
 		char curr;
@@ -160,7 +151,8 @@ public:
 
 	}
 
-	void identifier()
+void
+scanner::identifier()
 	{
 		// i made it so that we enter this function if there is valid for identifier
 	
@@ -204,7 +196,8 @@ public:
 		}
 	}
 
-	void operator_token()
+void 
+scanner::operator_token()
 	{
 	//	cout << "operator_token\n";
 
@@ -299,9 +292,9 @@ public:
 		case '#':
 			hash_token();
 			return;
-		/*case '.':
-			i++;
-			break;*/
+		case ':':
+			token_list[j++]->name = TK_COLON;
+			break;
 		case '\'':
 			//	get char
 			get_char_token();
@@ -313,11 +306,13 @@ public:
 			return;
 		default:
 			error("incorrect operator", " ", " ");
+			exit(0);
 		}
 		get_token();
 	}
 
-	void digit_token()
+void 
+scanner::digit_token()
 	{
 		// int are int
 		// decimals are 2 int
@@ -367,227 +362,231 @@ public:
 		}
 	}
 
-	void float_token()
+void 
+scanner::float_token()
+{
+	//printf("double\n");
+
+	token_list[j]->name = TK_FLOAT;  // ist take everything as int
+	char curr;
+	curr = buffer[i];
+	token_list[j]->exp = 0; //  0.1 decimal is 1* 10^-1
+
+	// 1st copy int value
+	token_list[j]->float_value = token_list[j]->int_value;
+	token_list[j]->int_value = 0;
+
+	float e = 0.0;
+	float pos = 1.0;
+	while ('0' <= curr && curr <= '9')
 	{
-		//printf("double\n");
-
-		token_list[j]->name = TK_FLOAT;  // ist take everything as int
-		char curr;
-		curr = buffer[i];
-		token_list[j]->exp = 0; //  0.1 decimal is 1* 10^-1
-
-		// 1st copy int value
-		token_list[j]->float_value = token_list[j]->int_value;
-		token_list[j]->int_value = 0;
-
-		float e = 0.0;
-		float pos = 1.0;
-		while ('0' <= curr && curr <= '9')
-		{
-			e = e*10+ (curr - '0');
-			curr = buffer[++i];
-			pos*=10;
-		}
-
-		// add exponent part too
-		token_list[j]->float_value += e/pos;
-
-		if (curr == 'E')
-		{
-			i++;
-			exp_token();
-			return;
-		}
-		else if (curr <= 32 || curr == ';')
-		{
-			j++;
-			get_token();
-			return;
-		}
-		else
-		{
-			printf("bad float: %c\n", curr);
-			j++;
-			get_eof();
-			return;
-		}
+		e = e*10+ (curr - '0');
+		curr = buffer[++i];
+		pos*=10;
 	}
 
-	void exp_token()
+	// add exponent part too
+	token_list[j]->float_value += e/pos;
+
+	if (curr == 'E')
 	{
-		//printf("double\n");
-
-		token_list[j]->name = TK_FLOAT;  // ist take everything as int
-		char curr;
-		int temp = 0;
-		curr = buffer[i];
-
-		while ('0' <= curr && curr <= '9')
-		{
-			temp = temp * 10 + (curr - '0');
-			i++;
-			curr = buffer[i];
-		}
-		token_list[j]->exp =  temp;
-		
-		if (curr <= 32 || curr == ';')
-		{
-			j++;
-			get_token();
-			return;
-		}
-		else
-		{
-			printf("bad exp: %c\n", curr);
-			{
-				j++;
-				get_eof();
-				return;
-			}
-		}
-	}
-
-	void hash_token()
-	{
-		//	printf("hash_token\n");
-		if (buffer[i++] == 'I'	&&
-			buffer[i++] == 'N'	&&
-			buffer[i++] == 'C'	&&
-			buffer[i++] == 'L'	&&
-			buffer[i++] == 'U'	&&
-			buffer[i++] == 'D'	&&
-			buffer[i++] == 'E')
-		{
-			while (buffer[i] != EOF && buffer[i] != '"' && buffer[i] != '<')
-				i++;
-			if (buffer[i] == EOF){
-				get_eof();
-				return;
-			}
-			else if (buffer[i] == '"'){
-				i++;
-				include_token(0);
-				return;
-			}
-			else if (buffer[i] == '<'){
-				i++; j++;
-				include_token(1);
-				return;
-			}
-		}
-		else {
-			printf("bad # ");
-			get_eof();
-			return;
-		}
-	}
-
-	void include_token(int type)
-	{
-		//printf("include_token\n");
-		token_list[j]->name = TK_INCLUDE;
-		char comparer, curr;
-		if (type == 0)
-			comparer = '"';
-		else if (type == 1)
-			comparer = '>';
-		// go inside include
-		while (buffer[i] != comparer && buffer[i] != EOF){
-			curr = buffer[i++];
-			token_list[j]->id += curr;
-		}
-		if (buffer[i] == EOF)
-		{
-			printf("bad include syntax. no closing %c \n", comparer);
-			j++;
-			get_eof();
-			return;
-		}
-		else
-		{
-			i++; j++;
-			get_token();
-			return;
-		}
-	}
-
-	void get_string_token()
-	{
-		token_list[j]->name = TK_STRING;  // ist take everything as int
-		char curr;
-		curr = buffer[i];
-		while (curr != '"')
-		{
-			if (curr == '\0')
-			{
-				printf("bad string\n");
-				return get_eof();
-			}
-			token_list[j]->id += curr;
-			curr = buffer[++i];
-		}
-		i++; j++;
-		return get_token();
-
-	}
-	
-	void
-	get_char_token(){
-		//std::cout << buffer[i] << endl;
-		token_list[j]->name = TK_CHAR;  
-		// any thing can be char
-
-		if (buffer[i] == '\\'){
-			i++;
-			switch (buffer[i]){
-			case 'n':
-				token_list[j]->char_val = '\n';
-				break;
-			case 't':
-				token_list[j]->char_val = '\t';
-				break;
-			default:
-				error("bad string operator ", buffer[i], " ");
-				exit(0);
-			}
-			i++;
-		}
-		else{
-			token_list[j]->char_val = buffer[i];
-			i++;
-		}
-		
-		if (buffer[i]!= '\''){
-			error("char not closed", buffer[i], " ");
-			exit(0);
-		}
-		else{
-			i++;
-			j++;
-			get_token();
-		}
-	}
-	
-	void comment( int type)
-	{
-		//printf("comment\n");
-		if (type == 0)
-		while (buffer[i] != EOF && buffer[i] != '\n') i++;
-
-		else if (type == 1){
-
-			while (buffer[i] != EOF){
-				if (buffer[i] == EOF) {
-					get_eof();
-					return;
-				}
-				else if (buffer[i++] == '*' && buffer[i] == '/') break;
-			}
-		}
 		i++;
-		//no j++ since it skips the operator
+		exp_token();
+		return;
+	}
+	else if (curr <= 32 || curr == ';')
+	{
+		j++;
 		get_token();
 		return;
 	}
+	else
+	{
+		printf("bad float: %c\n", curr);
+		j++;
+		get_eof();
+		return;
+	}
+}
 
-};
+void
+scanner::exp_token()
+{
+	//printf("double\n");
+
+	token_list[j]->name = TK_FLOAT;  // ist take everything as int
+	char curr;
+	int temp = 0;
+	curr = buffer[i];
+
+	while ('0' <= curr && curr <= '9')
+	{
+		temp = temp * 10 + (curr - '0');
+		i++;
+		curr = buffer[i];
+	}
+	token_list[j]->exp =  temp;
+		
+	if (curr <= 32 || curr == ';')
+	{
+		j++;
+		get_token();
+		return;
+	}
+	else
+	{
+		printf("bad exp: %c\n", curr);
+		{
+			j++;
+			get_eof();
+			return;
+		}
+	}
+}
+
+void 
+scanner::hash_token()
+{
+	//	printf("hash_token\n");
+	if (buffer[i++] == 'I'	&&
+		buffer[i++] == 'N'	&&
+		buffer[i++] == 'C'	&&
+		buffer[i++] == 'L'	&&
+		buffer[i++] == 'U'	&&
+		buffer[i++] == 'D'	&&
+		buffer[i++] == 'E')
+	{
+		while (buffer[i] != EOF && buffer[i] != '"' && buffer[i] != '<')
+			i++;
+		if (buffer[i] == EOF){
+			get_eof();
+			return;
+		}
+		else if (buffer[i] == '"'){
+			i++;
+			include_token(0);
+			return;
+		}
+		else if (buffer[i] == '<'){
+			i++; j++;
+			include_token(1);
+			return;
+		}
+	}
+	else {
+		printf("bad # ");
+		get_eof();
+		return;
+	}
+}
+
+void 
+scanner::include_token(int type)
+{
+	//printf("include_token\n");
+	token_list[j]->name = TK_INCLUDE;
+	char comparer, curr;
+	if (type == 0)
+		comparer = '"';
+	else if (type == 1)
+		comparer = '>';
+	// go inside include
+	while (buffer[i] != comparer && buffer[i] != EOF){
+		curr = buffer[i++];
+		token_list[j]->id += curr;
+	}
+	if (buffer[i] == EOF)
+	{
+		printf("bad include syntax. no closing %c \n", comparer);
+		j++;
+		get_eof();
+		return;
+	}
+	else
+	{
+		i++; j++;
+		get_token();
+		return;
+	}
+}
+
+void 
+scanner::get_string_token()
+{
+	token_list[j]->name = TK_STRING;  // ist take everything as int
+	char curr;
+	curr = buffer[i];
+	while (curr != '"')
+	{
+		if (curr == '\0')
+		{
+			printf("bad string\n");
+			return get_eof();
+		}
+		token_list[j]->id += curr;
+		curr = buffer[++i];
+	}
+	i++; j++;
+	return get_token();
+
+}
+	
+void
+scanner::get_char_token(){
+	//std::cout << buffer[i] << endl;
+	token_list[j]->name = TK_CHAR;  
+	// any thing can be char
+
+	if (buffer[i] == '\\'){
+		i++;
+		switch (buffer[i]){
+		case 'n':
+			token_list[j]->char_val = '\n';
+			break;
+		case 't':
+			token_list[j]->char_val = '\t';
+			break;
+		default:
+			error("bad string operator ", buffer[i], " ");
+			exit(0);
+		}
+		i++;
+	}
+	else{
+		token_list[j]->char_val = buffer[i];
+		i++;
+	}
+		
+	if (buffer[i]!= '\''){
+		error("char not closed", buffer[i], " ");
+		exit(0);
+	}
+	else{
+		i++;
+		j++;
+		get_token();
+	}
+}
+	
+void 
+scanner::comment( int type)
+{
+	//printf("comment\n");
+	if (type == 0)
+	while (buffer[i] != EOF && buffer[i] != '\n') i++;
+
+	else if (type == 1){
+
+		while (buffer[i] != EOF){
+			if (buffer[i] == EOF) {
+				get_eof();
+				return;
+			}
+			else if (buffer[i++] == '*' && buffer[i] == '/') break;
+		}
+	}
+	i++;
+	//no j++ since it skips the operator
+	get_token();
+	return;
+}

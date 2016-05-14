@@ -33,6 +33,8 @@
 	tk(op_pushb)\
 	tk(op_jfalse)\
 	tk(op_jtrue)\
+	tk(op_dup)\
+	tk(op_remove)\
 	tk(op_placeholder)\
 
 enum code_tk {
@@ -91,7 +93,9 @@ static const char *code_tk_string[] = {
 	tk2(TK_NOT)\
 	tk2(TK_IF)\
 	tk2(TK_ELSE)\
-
+	tk2(TK_SWITCH)\
+	tk2(TK_CASE)\
+	tk2(TK_DEFAULT)\
 
 	
 	enum token_name {

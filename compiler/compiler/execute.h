@@ -36,6 +36,8 @@ public:
 	int jfalse();
 	int jtrue();
 
+	int dup();
+	int remove();
 
 public:
 	char* code;	

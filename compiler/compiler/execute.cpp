@@ -1720,16 +1720,6 @@ int execute::eof(){
 	return 1;
 }
 
-
-
-/////////incomplete/////////////////////
-///////////////////////////////////////////
-//////////////////////////////
-
-int execute::pos(){
-	ip += sizeof(code_tk);
-	return 1;
-}
 int execute::jtrue(){
 	ip += sizeof(code_tk);
 	int pos = *(int*)(code + ip);
@@ -1779,4 +1769,73 @@ int execute::jfalse(){
 	}
 	ip = pos;
 	return 1;
+}
+
+
+/////////incomplete/////////////////////
+///////////////////////////////////////////
+//////////////////////////////
+
+int execute::pos(){
+	ip += sizeof(code_tk);
+	return 1;
+}
+
+int execute::dup(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	int p = is + sizeof(char);
+	switch (t){
+	case 'I':
+		is -= sizeof(int);
+		*(int*)(stack + p) = *(int*)(stack + is);
+		p += sizeof(int);
+		*(stack + p) = 'I';
+		p += sizeof(char);
+		is = p;
+		break;
+	case 'C':
+		is -= sizeof(char);
+		*(stack + p) = *(stack + is);
+		p += sizeof(char);
+		*(stack + p) = 'C';
+		p += sizeof(char);
+		is = p;
+		break;
+	case'F':
+		is -= sizeof(float);
+		*(float*)(stack + p) = *(float*)(stack + is);
+		p += sizeof(float);
+		*(stack + p) = 'F';
+		p += sizeof(char);
+		is = p;
+		break;
+	default:
+		error("Cant copy type ", t, " ");
+		exit(0);
+	}
+}
+
+int execute::remove(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	switch (t){
+	case 'I':
+		is -= sizeof(int);
+		if (is < 0) is = 0;
+		break;
+	case 'C':
+		is -= sizeof(char);
+		is -= sizeof(int);
+		if (is < 0) is = 0;		break;
+	case'F':
+		is -= sizeof(float);
+		if (is < 0) is = 0;	
+		break;
+	default:
+		error("Cant remove type ", t, " ");
+		exit(0);
+	}
 }

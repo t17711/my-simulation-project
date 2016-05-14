@@ -4,7 +4,6 @@
 #include "token.h"
 #include <string>
 #include <vector>
-#include <algorithm>    // std::find
 #include "symtab.h"
 
 using namespace std;
@@ -53,12 +52,19 @@ public:
 	// do while statement
 	void do_while();
 	void m_while();
+	
 	// if statement
 	void m_if();
+
+	// switch case statement
+	void m_switch();
+
 	// this is for print statement
 	void print();
+	
 	// this gives the type if token is type tokwen
 	char type();
+	
 	// compares token and moves up
 	void match(token_name t);
 
