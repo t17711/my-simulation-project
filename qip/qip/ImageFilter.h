@@ -22,9 +22,9 @@ class ImageFilter : public QWidget {
 public:
 	ImageFilter(QWidget *parent = 0);
 	virtual QGroupBox* controlPanel	();		// create control panel
-	virtual bool	   applyFilter	(ImagePtr, ImagePtr); // filter input image -> make output
-	virtual void	   reset	();		// reset parameters
-	virtual	void		disable(bool);
+	virtual bool		applyFilter	(ImagePtr, ImagePtr); // filter input image -> make output
+	virtual void		reset		();		// reset parameters
+	virtual	void		disable		(bool);
 };
 
 #endif // IMAGEFILTER_H

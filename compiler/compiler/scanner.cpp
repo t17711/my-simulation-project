@@ -4,10 +4,19 @@
 using namespace std;
 
 scanner::scanner(){
-		pfile = fopen("test.txt", "rb"); // rb is read as binary
-		if (!pfile) {
-			error("file opening failed", " ", " ");
-			return;
+		while (true) {
+			string name;// = "test.txt";
+			std::cout << " enter file name: ";
+			std::cin >> name;
+			const char* t = name.c_str();
+			pfile = fopen(t, "rb"); // rb is read as binary
+			
+			if (pfile) 
+				break;
+			else
+				error("file opening failed \n", " ", " ");
+
+
 		}
 
 		// allocate size
@@ -47,7 +56,7 @@ scanner::scanner(){
 			}
 		}
 
-	//	while (t<result) cout << buffer[t++];
+		//while (t<result) cout << buffer[t++];
 
 		// create a list of tokens
 		get_key_table();
@@ -114,7 +123,7 @@ scanner::check_keyword(token* tk)
 		token_name t = key_table[tk->id];
 		if (t != TK) tk->name = t;
 	}
-
+//main scanner 
 void
 scanner::get_token()
 	{
@@ -373,7 +382,7 @@ scanner::float_token()
 	token_list[j]->exp = 0; //  0.1 decimal is 1* 10^-1
 
 	// 1st copy int value
-	token_list[j]->float_value = token_list[j]->int_value;
+	token_list[j]->float_value = static_cast<float>(token_list[j]->int_value);
 	token_list[j]->int_value = 0;
 
 	float e = 0.0;

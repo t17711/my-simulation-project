@@ -643,7 +643,7 @@ int execute::div(){
 	switch (type){
 	case 'I':
 		is -= sizeof(int);
-		*(float*)(stack + is) = 1/ (*(int*)(stack + is));
+		*(float*)(stack + is) = static_cast<float>(1.0/ (*(int*)(stack + is)));
 		is += sizeof(float);
 		*(stack + is) = 'F';
 		is += sizeof(char);
@@ -1815,6 +1815,7 @@ int execute::dup(){
 		error("Cant copy type ", t, " ");
 		exit(0);
 	}
+	return 1;
 }
 
 int execute::remove(){
@@ -1838,4 +1839,6 @@ int execute::remove(){
 		error("Cant remove type ", t, " ");
 		exit(0);
 	}
+
+	return 1;
 }

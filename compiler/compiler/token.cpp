@@ -19,37 +19,6 @@ token::token(const token_name & name)
 
 }
 
-token::token(const token_name &name, const std::string &id)
-{
-	this->name = name;
-	this->id =id;
-	this->int_value = 0;
-	this->float_value = 0;;
-	this->exp = 0;
-
-
-}
-token::token(const token_name & name, const int & int_value)
-{
-	this->name = name;
-	this->int_value = int_value;
-	this->id = "";
-	this->float_value = 0;
-	this->exp = 0;
-
-
-}
-
-token::token(const token_name & name, const int & int_val, const int & float_value)
-{
-	this->name = name;
-	this->float_value = float_value;
-	this->id = "";
-	this->int_value = int_val;
-	this->exp = 0;
-
-}
-
 token& 
 token::operator = (const token& t){
 	id +=t.id;

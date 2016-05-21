@@ -4,11 +4,14 @@
 
 extern MainWindow *g_mainWindowP;
 
+// this function inherits histogram match for flar equalix=zation
 HistogramEqualize::
 HistogramEqualize(QWidget *parent) : HistogramMatch(parent)
 {
 }
 
+/*control panel
+this returns a groupbox containing control panel*/
 QGroupBox*
 HistogramEqualize::controlPanel()
 {
@@ -33,16 +36,19 @@ HistogramEqualize::controlPanel()
 	return(m_ctrlGrp);
 }
 
+/* this applies the equalize filter on the images inserted I1 and outputs to I2 image*/
 bool
 HistogramEqualize::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
 
+	// this checks which check box is checked and then calls that function
 	if (m_CheckBoxCummulative->isChecked())		cumulativeHist(0);
 	else if (m_CheckBoxFlat->isChecked())	maxFlatHist(0);
 	else reset();
 	return 1;
 }
 
+/* this resets all the sliders and spinboxes to initial condition*/
 void
 HistogramEqualize::reset(){
 	m_CheckBoxCummulative->	blockSignals	(true);
@@ -75,6 +81,7 @@ HistogramEqualize::reset(){
 
 }
 
+/* this disables all components if flag is true or enables all component if flag is false*/
 void
 HistogramEqualize::disable(bool flag){
 	m_CheckBoxCummulative->	blockSignals	(true);
@@ -88,6 +95,13 @@ HistogramEqualize::disable(bool flag){
 
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions as well as regular functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+/* when cummulitative checkbox is checked other checkbox is unchecked and cummulative equalize is done
+for this first i get cummulative histogram then i divide it by total pixel number to create lookup table,
+it doesnot give flat histogram */
 void
 HistogramEqualize::cumulativeHist(int){
 	if (!m_CheckBoxCummulative->isChecked()) {
@@ -115,9 +129,11 @@ HistogramEqualize::cumulativeHist(int){
 	
 	int lut[MXGRAY];
 	lut[0] = histogram[0];
+
 	// nou create cummulative histogram i.e. foe i>0 hist[i] = hist[i] +hist[(i-i)]
 	for (int i = 1; i < MXGRAY; ++i) lut[i] = histogram[i]	+ lut[i - 1];
 	
+	// get max number of pixels same as total
 	double histTotal = lut[MXGRAY-1] +	0.0;
 
 	// create look up table from the cummulative histogram by dividing each cummulative value by HistTOtal
@@ -138,6 +154,7 @@ HistogramEqualize::cumulativeHist(int){
 }
 
 // this distributes the histogram values to its neighbors to create flat hist
+/* this uses same function as hist match for 0 value i.e. flat*/
 void
 HistogramEqualize::maxFlatHist(int){
 	if (!m_CheckBoxFlat->isChecked()) {
@@ -155,85 +172,6 @@ HistogramEqualize::maxFlatHist(int){
 	ImagePtr I1 = g_mainWindowP->imageSrc();
 	ImagePtr I2 = g_mainWindowP->imageDst();
 
-#if 0
-
-	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
-	int w = I1->width();  // input image
-	int h = I1->height();
-	int total = w * h; // 
-	// here we need
-	int histo[MXGRAY]; // this histogram will store how much of slots in istogram are filled. it will look like output histogram
-	int left[MXGRAY];  // stores the left position of a pixel of a intensity in result histogram
-	int right[MXGRAY];	// stores the right position of a pixel of a intensity in result histogram
-	int reserveLeft[MXGRAY]; // this stores how many pixels of a intensity can be mapped in leftmost position
-	getHistogram(I1, histo);
-
-	int Havg = (int)(ceil((0.0 + total) / (MXGRAY + 0.0))); // find level to equalize
-
-	int R = 0;
-	int Hsum = 0;
-	int temp = 0;
-
-	/* normalize h2 to conform with dimensions of I1 */
-	//create temporary left to track overflow later
-	int left2[MXGRAY];
-
-	for (int i = 0; i<MXGRAY; i++) {
-		left[i] = R; /* left end of interval */
-		left2[i] = R; /* left end of interval */
-		temp = Havg - Hsum;
-		reserveLeft[i] = (temp > histo[i]) ? 0 : temp; // max amount of i on left
-
-		Hsum += histo[i]; /* cum. interval value */
-		while (Hsum>Havg && (MXGRAY - 1)>R) { /* make interval wider */
-			Hsum -= Havg; /* adjust Hsum */
-			R++; /* update right end */
-		}
-		right[i] = R;
-	}
-
-	// create temporary histogram
-	for (int i = 0; i<MXGRAY; i++) histo[i] = 0;
-
-	int type;
-	ChannelPtr<uchar> p1, p2, endd;
-
-	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
-		for (endd = p1 + total; p1 < endd;) {
-			int p = left[*p1];
-
-		//now compare how much of value can be added to the slot by comparing reserved place
-			if (histo[p] < Havg){
-				if (left2[*p1] != p)*p2 = p; // if histo value is less than avg then copy point
-	/* so check if left[*p1] is original left if it is so then check the reserved value, if 
-	reserved value is 0, then move to next place */
-				else {
-					if (reserveLeft[*p1] > 0){
-						reserveLeft[*p1]--;
-						*p2 = p;
-					}
-					else{
-						left[*p1] = (p + 1< right[*p1]) ? p + 1 : right[*p1];
-						p = left[*p1];
-						*p2 = p;
-					}
-				}
-			}
-			else{
-				left[*p1] = (p + 1< right[*p1]) ? p + 1 : right[*p1];
-				p = left[*p1];
-				*p2 = p;
-			}
-			histo[p]++;
-			*p1++;
-			*p2++;
-		}
-	}
-
-
-#endif
-
 	long double hist[MXGRAY];
 	for (int i = 0; i < MXGRAY; ++i) hist[i] = 1.;
 	this->HistMatch(I1, hist, I2);
@@ -242,6 +180,7 @@ HistogramEqualize::maxFlatHist(int){
 
 }
 
+// get histogram of image
 void
 HistogramEqualize::getHistogram(ImagePtr I1, int histogram[]){
 

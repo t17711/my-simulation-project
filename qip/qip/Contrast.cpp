@@ -20,8 +20,6 @@ extern MainWindow *g_mainWindowP;
 Contrast::Contrast(QWidget *parent) : ImageFilter(parent)
 {}
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Contrast::applyFilter:
 //
@@ -50,8 +48,6 @@ Contrast::applyFilter(ImagePtr I1, ImagePtr I2)
 
 	return 1;
 }
-
-
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Contrast::createGroupBox:
@@ -122,39 +118,60 @@ Contrast::controlPanel()
 	return(m_ctrlGrp);
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Contrast::reset:
+//
+// Reset parameters.
+//
+void
+Contrast::reset() {
+	// disable signals to prevent duplicate calculations
 
+	m_sliderB->blockSignals(true);
+	m_sliderC->blockSignals(true);
+	m_spinBoxB->blockSignals(true);
+	m_spinBoxC->blockSignals(true);
 
+	// set 0 to all fields
+	m_sliderB->setValue(0);
+	m_sliderC->setValue(0);
+	m_spinBoxB->setValue(0);
+	m_spinBoxC->setValue(1); // normal contrast is 1
+
+	// enable signals
+	m_sliderB->blockSignals(false);
+	m_sliderC->blockSignals(false);
+	m_spinBoxB->blockSignals(false);
+	m_spinBoxC->blockSignals(false);
+
+	// apply filter to source image; save result in destination image as 0 brightness and contrast
+	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
+
+	// display output
+	g_mainWindowP->displayOut();
+}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // contrast:
 //
 // INSERT YOUR CODE HERE.
 //
-void
-Contrast::contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2)
-{
-	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
-	int w = I1->width();  // input image
-	int h = I1->height();
-	int total = w * h; // 
 
-	int lut[MXGRAY];
-	int shift = reference + brightness;
-	// apply brightness or contrast
-	for (int i = 0; i < MXGRAY; ++i){
-		// value is always 0 to 255
-		lut[i] = (int) CLIP((i - reference)*contrast + shift, 0 , 255);
-	}
-	// point operation
-	int type;
-	ChannelPtr<uchar> p1, p2, endd;
-	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
-		for (endd = p1 + total; p1 < endd;) *p2++ = lut[*p1++];  // set rgb to 0 below threshold and 255 above
-	}
-// more stuff
+/* this disables all components if flag is true or enables all component if flag is false*/
+void
+Contrast::disable(bool flag){
+	m_sliderB->setDisabled(flag);
+	m_spinBoxB->setDisabled(flag);
+	m_sliderC->setDisabled(flag);
+	m_spinBoxC->setDisabled(flag);
 
 }
-// change bright ness
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+// this function is called when slider or spinbox for brightness is called
+// it just makes both same value and calls apply filter
 void Contrast::changeBright(int bri){
 	m_sliderB->blockSignals(true);
 	m_sliderB->setValue(bri);
@@ -171,6 +188,8 @@ void Contrast::changeBright(int bri){
 
 }
 
+// this function is called when slider  for contrast is called
+// it just converts slider value to contrast value and updates spinbox
 void Contrast::changeContrast(int cont){
 	// disable signals to prevent duplicate calculations
 	double c = cont * 1.0;
@@ -192,53 +211,9 @@ void Contrast::changeContrast(int cont){
 
 }
 
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Contrast::reset:
-//
-// Reset parameters.
-//
+// this function is called when spinbox  for contrast is called
+// it just converts spinbox value to integer value and updates  slider
 void
-Contrast::reset() {
-	// disable signals to prevent duplicate calculations
-
-	m_sliderB->blockSignals(true);
-	m_sliderC->blockSignals(true);
-	m_spinBoxB->blockSignals(true);
-	m_spinBoxC->blockSignals(true);
-
-	// set 0 to all fields
-	m_sliderB->setValue(0);
-	m_sliderC->setValue(0);
-	m_spinBoxB->setValue(0);
-	m_spinBoxC->setValue(1); // normal contrast is 1
-	
-	// enable signals
-	m_sliderB->blockSignals(false);
-	m_sliderC->blockSignals(false);
-	m_spinBoxB->blockSignals(false);
-	m_spinBoxC->blockSignals(false);
-
-	// apply filter to source image; save result in destination image as 0 brightness and contrast
-	applyFilter(g_mainWindowP->imageSrc(), g_mainWindowP->imageDst());
-
-	// display output
-	g_mainWindowP->displayOut();
-}
-
-double 
-Contrast::getContrast(double c){
-	// set contrast to 1/4 to 5, from -100 to 100
-
-	if (c >= 0)
-		c = c / 25.0 + 1.0;
-	else
-		c = 1.0 + c / 133.;
-	return c;
-}
-
-
-void 
 Contrast::changeContrast(double c){
 	// set contrast from 1/4 to 5, to -100 to 100
 	if (c == 1) changeContrast(0);
@@ -250,11 +225,47 @@ Contrast::changeContrast(double c){
 	int ctr = (int)c;
 	changeContrast(ctr);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* filter functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+// this is main contrast filter that creates LUT based on formula and applies LUT to I1 and outputs to I2
 void
-Contrast::disable(bool flag){
-	m_sliderB->setDisabled(flag);
-	m_spinBoxB->setDisabled(flag);
-	m_sliderC->setDisabled(flag);
-	m_spinBoxC->setDisabled(flag);
+Contrast::contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2)
+{
+	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
+	int w = I1->width();  // input image
+	int h = I1->height();
+	int total = w * h; // 
+
+	int lut[MXGRAY];
+	int shift = reference + brightness;
+	// apply brightness or contrast
+	for (int i = 0; i < MXGRAY; ++i){
+		// value is always 0 to 255
+		lut[i] = (int)CLIP((i - reference)*contrast + shift, 0, 255);
+	}
+	// point operation
+	int type;
+	ChannelPtr<uchar> p1, p2, endd;
+	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+		for (endd = p1 + total; p1 < endd;) *p2++ = lut[*p1++];  // set rgb to 0 below threshold and 255 above
+	}
+	// more stuff
 
 }
+
+// this function gives a decimal contrast value from integer of slider for double spinbox
+double
+Contrast::getContrast(double c){
+	// set contrast to 1/4 to 5, from -100 to 100
+
+	if (c >= 0)
+		c = c / 25.0 + 1.0;
+	else
+		c = 1.0 + c / 133.;
+	return c;
+}
+

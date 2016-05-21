@@ -7,7 +7,6 @@ parser::parser(token** c, int token_size)
 	// just have code be longer than token list
 	code = (char*)malloc(sizeof(char*)*token_size*10);
 	currtoken = 0;
-
 }
 
 /*this puts code enum to the list*/
@@ -226,6 +225,9 @@ parser::statment_types(){
 	case TK_SWITCH:
 		m_switch();
 		break;
+	case TK_FOR:
+		m_for();
+		break;
 	case TK_END:
 		return;
 		// for switch case statements
@@ -270,7 +272,6 @@ parser::expression(){
 	expression_mul_div();
 	add_sub();
 }
-
 
 // addition, subtraction
 void
@@ -516,7 +517,6 @@ void parser::do_while(){
 
 	match(TK_SEMICOLON);
 	// now go check if there are more statements
-	statment_types();
 }
 
 //while
@@ -649,6 +649,71 @@ void parser::m_switch(){
 	gen_op_code(op_remove);
 }
 // this checks and increments current token position
+
+void parser::m_for(){
+	match(TK_FOR);
+	match(TK_OPEN);
+
+	// do assignment
+	assignment();
+	int comp_hole = ip;  // need to jump here later
+
+	// do expression
+	expression();
+	match(TK_SEMICOLON);
+	gen_op_code(op_jfalse); // when false escape for
+	// save hole to jump if true
+	int when_wrong = ip;
+	gen_address(0);
+
+	gen_op_code(op_jmp);
+	// jump to statement when true;
+	int when_right = ip;
+	gen_address(0);
+
+	int increment = ip;
+
+	// do increment stuff
+	// get stuff to assign
+	//cout << " got into assignment\n";
+	int addr = stack->get_address(token_list[currtoken]->id);
+	match(TK_ID);
+	match(TK_EQUAL);
+
+	//call id literrak, plus minus stuff
+	expression();
+	// now arthematic or procedure here
+
+	match(TK_CLOSE);
+
+	gen_op_code(op_pop);
+	gen_address(addr);
+
+	// go to compare after assignment
+	gen_op_code(op_jmp);
+	gen_address(comp_hole);
+
+	// now go to statement afeer compare 
+	// for that fill jump
+	int save = ip;
+	ip = when_right;
+	gen_address(save);
+	ip = save;
+	// now go to statement
+	statements();
+
+	// now jump to increment
+	gen_op_code(op_jmp);
+	gen_address(increment);
+
+	// now fill hole for when comparision is wrong
+	save = ip;
+	ip = when_wrong;
+	gen_address(save); // when wrong skip for loop
+	ip = save;
+
+}
+
 void
 parser::match(token_name t){
 	if (t != token_list[currtoken]->name){

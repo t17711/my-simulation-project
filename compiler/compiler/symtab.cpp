@@ -2,9 +2,10 @@
 
 symtab::symtab(int size)
 {
+	MAX = size;
 	pos = 0;
-	symarray = (char*)malloc(sizeof(char)*size);
-	for (int i = 0; i<size; ++i) *(symarray + i) = 0;
+	symarray = (char*)malloc(sizeof(char)*MAX);
+	for (int i = 0; i<MAX; ++i) *(symarray + i) = 0;
 }
 
 bool

@@ -111,9 +111,6 @@ class token
 public:
 	token();
 	token(const token_name &);
-	token(const token_name &, const int&);
-	token(const token_name&, const std::string&);
-	token(const token_name&, const int&, const int&);
 	token&  operator = (const token& t);
 	
 	void print();

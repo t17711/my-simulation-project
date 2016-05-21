@@ -6,36 +6,12 @@ extern MainWindow *g_mainWindowP;
 HistogramStretch::
 HistogramStretch(QWidget *parent) : ImageFilter(parent)
 {}
+////////////////////////////////////////////////////////////////////////////////////////////
+/*virtual functions first*/
+///////////////////////////////////////////////////////////
 
-void
-HistogramStretch::reset(){
-	// disable signals
-	m_sliderMax->			blockSignals(true);
-	m_spinBoxMax->			blockSignals(true);
-
-	m_sliderMin->			blockSignals(true);
-	m_spinBoxMin->			blockSignals(true);
-
-	m_CheckBoxAutoMax->		blockSignals(true);
-	m_CheckBoxAutoMin->		blockSignals(true);
-	// reset values
-	m_sliderMin->			setValue(0);		 // min is 0
-	m_spinBoxMin->			setValue(0);
-	m_sliderMax->			setValue(MXGRAY);	 // max is 255
-	m_spinBoxMax->			setValue(MXGRAY);	 // max is 255
-
-	// enable signals
-	m_sliderMax->			blockSignals(false);
-	m_spinBoxMax->			blockSignals(false);
-
-	m_sliderMin->			blockSignals(false);
-	m_spinBoxMin->			blockSignals(false);
-
-	m_CheckBoxAutoMax->		blockSignals(false);
-	m_CheckBoxAutoMin->		blockSignals(false);
-
-}
-
+/*control panel
+this returns a groupbox containing control panel*/
 QGroupBox*
 HistogramStretch::controlPanel(){
 	// init group box
@@ -56,7 +32,6 @@ HistogramStretch::controlPanel(){
 	m_spinBoxMin->	setValue(0);
 
 	m_CheckBoxAutoMin = new QCheckBox(tr("min auto"),m_ctrlGrp);
-
 
 	// for maximum
 	QLabel *label_max = new QLabel(tr("Minimum"));
@@ -85,6 +60,7 @@ HistogramStretch::controlPanel(){
 	layout->addWidget	(m_spinBoxMax,			3, 1);
 	layout->addWidget	(m_CheckBoxAutoMax,		3, 2, Qt::AlignLeft);
 
+	// connect the widgets to their respective slot functions
 	connect(m_sliderMin,		SIGNAL(valueChanged(int)),	this, SLOT(changeMin(int)));
 	connect(m_spinBoxMin,		SIGNAL(valueChanged(int)),	this, SLOT(changeMin(int)));
 	connect(m_CheckBoxAutoMin,	SIGNAL(stateChanged(int)),	this, SLOT(changeMinAuto(int)));
@@ -93,7 +69,7 @@ HistogramStretch::controlPanel(){
 	connect(m_spinBoxMax,		SIGNAL(valueChanged(int)),	this, SLOT(changeMax(int)));
 	connect(m_CheckBoxAutoMax,	SIGNAL(stateChanged(int)),	this, SLOT(changeMaxAuto(int)));
 
-
+	// add layout to groupbox
 	m_ctrlGrp->		setLayout(layout);
 	// connect signal here
 	disable	(true);
@@ -101,6 +77,7 @@ HistogramStretch::controlPanel(){
 	return(m_ctrlGrp);
 }
 
+/* this applies the blur filter on the images inserted I1 and outputs to I2 image*/
 bool
 HistogramStretch::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
@@ -121,32 +98,91 @@ HistogramStretch::applyFilter(ImagePtr I1, ImagePtr I2){
 	min = CLIP(min, 0, 250);
 	max = CLIP(max, 5, 255);
 
+	// assert that max is always bigger than min by 5
 	if (min >= max - 5){
 		max = min + 5;
 
-		m_sliderMin->		blockSignals(true);
-		m_spinBoxMin->		blockSignals(true);
-		m_sliderMax->		blockSignals(true);
-		m_spinBoxMax->		blockSignals(true);
+		m_sliderMin->blockSignals(true);
+		m_spinBoxMin->blockSignals(true);
+		m_sliderMax->blockSignals(true);
+		m_spinBoxMax->blockSignals(true);
 
-		m_sliderMin->		setValue(min);
-		m_spinBoxMin->		setValue(min);
-		m_sliderMax->		setValue(max);
-		m_spinBoxMax->		setValue(max);
+		m_sliderMin->setValue(min);
+		m_spinBoxMin->setValue(min);
+		m_sliderMax->setValue(max);
+		m_spinBoxMax->setValue(max);
 
-		m_sliderMin->		blockSignals(false);
-		m_spinBoxMin->		blockSignals(false);
-		m_sliderMax->		blockSignals(false);
-		m_spinBoxMax->		blockSignals(false);
+		m_sliderMin->blockSignals(false);
+		m_spinBoxMin->blockSignals(false);
+		m_sliderMax->blockSignals(false);
+		m_spinBoxMax->blockSignals(false);
 
 	}
-
+	// calciulate histogram of image and send to stretch function
 	int histogram[MXGRAY];
 	getHistogram(I1, histogram);
 	histogramStretch(I1, min, max, I2);
 	return 1;
 }
 
+/* this resets all the sliders and spinboxes to initial condition*/
+void
+HistogramStretch::reset(){
+	// disable signals
+	m_sliderMax->			blockSignals(true);
+	m_spinBoxMax->			blockSignals(true);
+
+	m_sliderMin->			blockSignals(true);
+	m_spinBoxMin->			blockSignals(true);
+
+	m_CheckBoxAutoMax->		blockSignals(true);
+	m_CheckBoxAutoMin->		blockSignals(true);
+	// reset values
+	m_sliderMin->			setValue(0);		 // min is 0
+	m_spinBoxMin->			setValue(0);
+	m_sliderMax->			setValue(MXGRAY-5);	 // max is 255
+	m_spinBoxMax->			setValue(MXGRAY-5);	 // max is 255
+
+	// enable signals
+	m_sliderMax->			blockSignals(false);
+	m_spinBoxMax->			blockSignals(false);
+
+	m_sliderMin->			blockSignals(false);
+	m_spinBoxMin->			blockSignals(false);
+
+	m_CheckBoxAutoMax->		blockSignals(false);
+	m_CheckBoxAutoMin->		blockSignals(false);
+
+}
+
+/* this disables all components if flag is true or enables all component if flag is false*/
+void
+HistogramStretch::disable(bool flag){
+
+	m_sliderMin->blockSignals(true);
+	m_sliderMax->blockSignals(true);
+	m_CheckBoxAutoMin->blockSignals(true);
+
+	m_sliderMin->setDisabled(flag);
+	m_sliderMax->setDisabled(flag);
+
+	m_spinBoxMin->setDisabled(flag);
+	m_spinBoxMax->setDisabled(flag);
+
+	m_CheckBoxAutoMin->setDisabled(flag);
+	m_CheckBoxAutoMax->setDisabled(flag);
+
+	m_sliderMin->blockSignals(false);
+	m_sliderMax->blockSignals(false);
+	m_CheckBoxAutoMin->blockSignals(false);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+/* this function is called when spinbox or slider for minimum changes value 
+this sets them to same value and calls apply filter*/
 void
 HistogramStretch::changeMin(int min){
 
@@ -165,18 +201,25 @@ HistogramStretch::changeMin(int min){
 	g_mainWindowP->displayOut();
 
 }
+
+// this check box finds minimum of image sets the slider to that value and disables slider spinbox and calls apply filter
+// when unchecked it enables the slider and spinbox
 void 
 HistogramStretch::changeMinAuto(int){
 	// get histogram
 	ImagePtr I1 = g_mainWindowP->imageSrc();
 	ImagePtr I2 = g_mainWindowP->imageDst();
 
-	int histogram[MXGRAY];
-	getHistogram(I1, histogram);
 
 	int max = m_sliderMax->value();
 	int min;
 	if (m_CheckBoxAutoMin->isChecked()){
+		
+		// get image histogram
+		int histogram[MXGRAY];
+		getHistogram(I1, histogram);
+
+		// find first non zero intensityu
 		for (int i = 0; i < MXGRAY; ++i){
 			if (!histogram[i]) continue;
 			min = i;
@@ -204,6 +247,8 @@ HistogramStretch::changeMinAuto(int){
 	g_mainWindowP->displayOut();
 }
 
+/* this function is called when spinbox or slider for maximum changes value
+this sets them to same value and calls apply filter*/
 void
 HistogramStretch::changeMax(int max){
 		m_sliderMax->blockSignals(true);
@@ -222,18 +267,23 @@ HistogramStretch::changeMax(int max){
 
 }
 
+// this check box finds minimum of image sets the slider to that value and disables slider spinbox and calls apply filter
+// when unchecked it enables the slider and spinbox
+
 void
 HistogramStretch::changeMaxAuto(int){
 	ImagePtr I1 = g_mainWindowP->imageSrc();
 	ImagePtr I2 = g_mainWindowP->imageDst();
 
-	int histogram[MXGRAY];
-	getHistogram(I1, histogram);
-
 	int max;
 	int min = m_sliderMin->value();
 
 	if (m_CheckBoxAutoMax->isChecked()){
+		// get image histogram
+		int histogram[MXGRAY];
+		getHistogram(I1, histogram);
+
+		// find largest non zero intensity
 		for (int i = MXGRAY - 1; i >= 0; --i){
 			if (!histogram[i]) continue;
 			max = i;
@@ -262,6 +312,12 @@ HistogramStretch::changeMaxAuto(int){
 	g_mainWindowP->displayOut();
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/* filter functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+/* this is main histogram stretch function that creates look up table based on min amd max using formula
+and filters input image using LUT and outputs the filtered image*/
 void
 HistogramStretch::histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2){
 
@@ -274,6 +330,8 @@ HistogramStretch::histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2){
 	int diff = max - min;
 	// get look up table
 	for (int i = 0; i < MXGRAY; ++i)
+
+		// just use the formula
 		lut[i] = CLIP(((MXGRAY-1)*(i - min) / diff), 0, (MXGRAY-1));
 	// create image
 
@@ -286,27 +344,7 @@ HistogramStretch::histogramStretch(ImagePtr I1, int min, int max, ImagePtr I2){
 	}
 }
 
-void
-HistogramStretch::disable(bool flag){
-
-	m_sliderMin->			blockSignals(true);
-	m_sliderMax->			blockSignals(true);
-	m_CheckBoxAutoMin->		blockSignals(true);
-
-	m_sliderMin->			setDisabled(flag);
-	m_sliderMax->			setDisabled(flag);
-
-	m_spinBoxMin->			setDisabled(flag);
-	m_spinBoxMax->			setDisabled(flag);
-
-	m_CheckBoxAutoMin->		setDisabled(flag);
-	m_CheckBoxAutoMax->		setDisabled(flag);
-
-	m_sliderMin->			blockSignals(false);
-	m_sliderMax->			blockSignals(false);
-	m_CheckBoxAutoMin->		blockSignals(false);
-}
-
+/* this just gives histogram from input image to input array*/
 void
 HistogramStretch::getHistogram(ImagePtr I1, int histogram[]){
 

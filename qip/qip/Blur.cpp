@@ -5,17 +5,26 @@
 #define maxbuffer 255
 
 extern MainWindow *g_mainWindowP;
-
+/*this is constructor that inherits from imagefilter*/
 Blur::Blur(QWidget *parent) : ImageFilter(parent){
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+/*virtual functions first*/
+///////////////////////////////////////////////////////////
+
+/*control panel
+this returns a groupbox containing control panel*/
 QGroupBox*
-Blur::controlPanel(){			// create control panel
+Blur::controlPanel(){	
+	// main groupbox of this filter
 	m_ctrlGrp = new QGroupBox("Blur window");
 
-	// for minimum
-	QLabel *labelXsz = new QLabel(tr("X size"));
+	// for row neighbor size
+	QLabel *labelXsz = new QLabel(tr("Row size"));
 
+	/* slider fot xsize or row neighborhood size
+	it goes from 0 to 255 */
 	m_sliderXsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderXsz->setTickPosition(QSlider::TicksBelow);
 	m_sliderXsz->setTickInterval(10);
@@ -27,101 +36,106 @@ Blur::controlPanel(){			// create control panel
 	m_spinBoxXsz->setValue(1);
 
 
-	// for maximum
-	QLabel *labelYsz = new QLabel(tr("Y size"));
-
+	// for column size
+	QLabel *labelYsz = new QLabel(tr("Column size"));
+	/* slider fot xsize or row neighborhood size
+	it goes from 0 to 255 */
 	m_sliderYsz = new QSlider(Qt::Horizontal, m_ctrlGrp);
 	m_sliderYsz->setTickPosition(QSlider::TicksBelow);
 	m_sliderYsz->setTickInterval(10);
 	m_sliderYsz->setRange(1, maxbuffer); /// range is 1 to 11 
 	m_sliderYsz->setValue(1); // neighborhood can be 1*1 min
-
 	m_spinBoxYsz = new QSpinBox(m_ctrlGrp);
 	m_spinBoxYsz->setRange(1, maxbuffer);
 	m_spinBoxYsz->setValue(1);
 
 	// couple checkbox
 	m_coupleSZ = new QCheckBox("Combine x y values", m_ctrlGrp);
+	
 	// layout
 	QGridLayout *layout = new QGridLayout;
 	layout->addWidget(labelXsz, 0, 0);
 	layout->addWidget(m_sliderXsz, 1, 0);
 	layout->addWidget(m_spinBoxXsz, 1, 1);
-
 	layout->addWidget(labelYsz, 2, 0);
 	layout->addWidget(m_sliderYsz, 3, 0);
 	layout->addWidget(m_spinBoxYsz, 3, 1);
-
 	layout->addWidget(m_coupleSZ);
 
+	//  connect signals
 	connect(m_sliderXsz, SIGNAL(valueChanged(int)), this, SLOT(changeXsz(int)));
 	connect(m_spinBoxXsz, SIGNAL(valueChanged(int)), this, SLOT(changeXsz(int)));
-
 	connect(m_sliderYsz, SIGNAL(valueChanged(int)), this, SLOT(changeYsz(int)));
 	connect(m_spinBoxYsz, SIGNAL(valueChanged(int)), this, SLOT(changeYsz(int)));
-
 	connect(m_coupleSZ, SIGNAL(stateChanged(int)), this, SLOT(changeCouple(int)));
 
+	// attach layout to groupbox
 	m_ctrlGrp->setLayout(layout);
-	// connect signal here
 	
+	// set all of these components disabled right now
 	disable(true);
+
+	// return groupbox
 	return(m_ctrlGrp);
 
 }
 
-void
-Blur::disable(bool flag){
-	m_sliderXsz->blockSignals(true);
-	m_sliderYsz->blockSignals(true);
-	m_spinBoxXsz->blockSignals(true);
-	m_spinBoxYsz->blockSignals(true);
-	m_coupleSZ->blockSignals(true);
+/* this applies the blur filter on the images inserted I1 and outputs to I2 image*/
+bool
+Blur::applyFilter(ImagePtr I1, ImagePtr I2){
+	if (I1.isNull()) return 0;
 
-	m_sliderXsz->setDisabled(flag);
-	m_sliderYsz->setDisabled(flag);
+	// read slider values to get row and column size of neighborhood
+	int xsz = m_sliderXsz->value();
+	int ysz = m_sliderYsz->value();
 
-	m_spinBoxXsz->setDisabled(flag);
-	m_spinBoxYsz->setDisabled(flag);
+	// call  filter operation
+	getBlur(I1, xsz, ysz, I2);
 
-	m_coupleSZ->setDisabled(flag);
-
-	m_sliderXsz->blockSignals(false);
-	m_sliderYsz->blockSignals(false);
-	m_spinBoxXsz->blockSignals(false);
-	m_spinBoxYsz->blockSignals(false);
-
-	m_coupleSZ->blockSignals(false);
+	return 1;
 }
 
+/* this resets all the sliders and spinboxes to initial condition*/
 void
 Blur::reset(){
 	// disable signals
-	m_sliderYsz->blockSignals(true);
-	m_spinBoxYsz->blockSignals(true);
-
-	m_sliderXsz->blockSignals(true);
-	m_spinBoxXsz->blockSignals(true);
-
-	m_coupleSZ->blockSignals(true);
+	m_sliderYsz->blockSignals	(true);
+	m_spinBoxYsz->blockSignals	(true);
+	m_sliderXsz->blockSignals	(true);
+	m_spinBoxXsz->blockSignals	(true);
+	m_coupleSZ->blockSignals	(true);
 
 	// reset values
-	m_sliderXsz->setValue(1);		 // start is 0
-	m_spinBoxXsz->setValue(2);
-	m_sliderYsz->setValue(1);	 // start is 0
-	m_spinBoxYsz->setValue(1);	 // start is 0
-
-	m_coupleSZ->setChecked(false);
+	m_sliderXsz->setValue		(1);		 // start is 1
+	m_spinBoxXsz->setValue		(2);
+	m_sliderYsz->setValue		(1);	 // start is 1
+	m_spinBoxYsz->setValue		(1);	 // start is 1
+	m_coupleSZ->setChecked		(false);
 
 	// enable signals
-	m_sliderYsz->blockSignals(false);
-	m_spinBoxYsz->blockSignals(false);
-
-	m_sliderXsz->blockSignals(false);
-	m_spinBoxXsz->blockSignals(false);
-	m_coupleSZ->blockSignals(false);
+	m_sliderYsz->blockSignals	(false);
+	m_spinBoxYsz->blockSignals	(false);
+	m_sliderXsz->blockSignals	(false);
+	m_spinBoxXsz->blockSignals	(false);
+	m_coupleSZ->blockSignals	(false);
 }
 
+/* this disables all components if flag is true or enables all component if flag is false*/
+void
+Blur::disable(bool flag){
+	// disable or enable
+	m_sliderXsz->setDisabled	(flag);
+	m_sliderYsz->setDisabled	(flag);
+	m_spinBoxXsz->setDisabled	(flag);
+	m_spinBoxYsz->setDisabled	(flag);
+	m_coupleSZ->setDisabled		(flag);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+// slot function for change in row slider or spinbox
 void 
 Blur::changeXsz(int xsz){
 	if (xsz % 2 == 0 && xsz > 0){ // maintain odd
@@ -129,8 +143,9 @@ Blur::changeXsz(int xsz){
 		else
 			xsz--;
 	}
-	// if checked change all value
+	// if checked change all slider values
 	if (m_coupleSZ->isChecked()){
+		// block signals first
 		m_sliderYsz->blockSignals(true);
 		m_spinBoxYsz->blockSignals(true);
 
@@ -156,6 +171,7 @@ Blur::changeXsz(int xsz){
 	g_mainWindowP->displayOut();
 }
 
+//slot function for change in cllumn slider or spinbox
 void
 Blur::changeYsz(int ysz){
 	if (ysz % 2 == 0 && ysz > 0){ // maintain odd
@@ -191,6 +207,7 @@ Blur::changeYsz(int ysz){
 	g_mainWindowP->displayOut();
 }
 
+// slot if check box for coupling x and y sliders  or spinbox
 void 
 Blur::changeCouple(int){
 	if (m_coupleSZ->isChecked()){
@@ -227,17 +244,13 @@ Blur::changeCouple(int){
 		return;
 }
 
-bool
-Blur::applyFilter(ImagePtr I1, ImagePtr I2){
-	if (I1.isNull()) return 0;
-	int xsz = m_sliderXsz->value();
-	int ysz = m_sliderYsz->value();
+///////////////////////////////////////////////////////////////////////////////////////
+/* filter functions*/
+///////////////////////////////////////////////////////////////////////////////
 
-	getBlur(I1, xsz, ysz, I2);
-
-	return 1;
-}
-
+/*this is the main fuinction called by apply filter
+this function iterates through rows and columns to blur them by calling 1d blur function
+when we blur rows and blur the result with column it gives both row and column blur*/
 void
 Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 	IP_copyImageHeader(I1, I2);  // copys width height and other properties from i1 to i2
@@ -256,7 +269,7 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 
 		IP_getChannel(I2, ch, p2, type); // gets channel 0 1 or 2 (r, g ,b) array 
 		
-		// for row
+		// for row blur
 		for (int i = 0; i < h;++i){ // go from top row to bottom
 
 			// now get 1d blur of pixel width w, step 1, and neighborhood xsz
@@ -271,7 +284,7 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 		// get pointer for output
 		IP_getChannel(I2, ch, p3, type); // gets channle 0 1 or 2 (r, g ,b) array 
 
-		// for column
+		// for column blur
 		for (int i = 0; i < w; ++i){ // go from 1st col to last
 		// now get 1d blur of pixel width h, step w, and neighborhood ysz
 			getBlur_1D(p2, h, w, ysz, p3); 
@@ -283,11 +296,13 @@ Blur::getBlur(ImagePtr I1, int xsz, int ysz, ImagePtr I2){
 
 }
 
-
+/*this does one dimensional blur. it reads input of 'width, count by taking 'steps' step 
+then it pads row or column by 'size-1 / 2 pixels left and right and takes blur of all concurrend size pixels*/
 void
 Blur::getBlur_1D(IP::ChannelPtr<uchar> p1, int width, int steps, int size, IP::ChannelPtr<uchar> p2){
 	size_t buffer_size = width + size - 1; // so buffer size is width plus size of neighborhood - 1 
 	int extra = (size-1) / 2;
+	// if size is 1 no need to blur
 	if (size==1) {
 		for (int i = 0; i < width; i++, p2 += steps, p1 += steps) {
 			*p2 = *p1;

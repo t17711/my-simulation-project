@@ -28,5 +28,6 @@ public:
 	int pos;
 	char* symarray;
 	map<string, int> address;
+	int MAX;
 };
 

@@ -62,6 +62,8 @@ public:
 	// this is for print statement
 	void print();
 	
+	// for loop
+	void m_for();
 	// this gives the type if token is type tokwen
 	char type();
 	

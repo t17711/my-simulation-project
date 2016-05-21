@@ -3,9 +3,15 @@
 
 extern MainWindow *g_mainWindowP;
 
-
+// constructor. this filter inherits from blur filter
 Sharpen::Sharpen(QWidget *parent) : Blur(parent){}
 
+////////////////////////////////////////////////////////////////////////////////////////////
+/*virtual functions first*/
+///////////////////////////////////////////////////////////
+
+/*control panel
+this returns a groupbox containing control panel*/
 QGroupBox* 
 Sharpen::controlPanel(){		// create control panel
 	m_ctrlGrp = new QGroupBox("Sharpen");
@@ -86,35 +92,12 @@ Sharpen::controlPanel(){		// create control panel
 
 }
 
-/*this function returns sharpened image*/
-void
-Sharpen::getSharp(ImagePtr I1, int xsz,int ysz, int fctr, ImagePtr I2){
-
-	Blur::getBlur(I1, xsz, ysz, I2);
-
-	int w = I1->width();  // input image
-	int h = I1->height();
-	int total = w * h; // 
-
-	int type;
-	ChannelPtr<uchar> p1, p2, endd;
-	int val = 0;
-	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
-
-		for (endd = p1 + total; p1 < endd;) {
-			val= *p1 - *p2; // diff to orgnal picture to blurred
-			val= CLIP((val * fctr),0,MXGRAY-1); // multiply by factor
-			*p2 = CLIP(val + *p1, 0, MXGRAY - 1); // add to input
-			p1++; p2++;
-		}
-	}
-
-}
-
+/* this applies the sharpen filter on the images inserted I1 and outputs to I2 image*/
 bool
 Sharpen::applyFilter(ImagePtr I1, ImagePtr I2){
 	if (I1.isNull()) return 0;
+
+	// read neighbor hood size and sharpen factor from sliders and spinboxes
 	int xsz = m_sliderXsz->value();
 	int ysz = m_sliderYsz->value();
 	int fctr = m_spinBoxFctr->value();
@@ -125,19 +108,7 @@ Sharpen::applyFilter(ImagePtr I1, ImagePtr I2){
 	return 1;
 }
 
-void
-Sharpen::disable(bool flag){
-	m_sliderXsz->setDisabled(flag);
-	m_sliderYsz->setDisabled(flag);
-
-	m_spinBoxXsz->setDisabled(flag);
-	m_spinBoxYsz->setDisabled(flag);
-
-	m_sliderFctr->setDisabled(flag);
-	m_spinBoxFctr->setDisabled(flag);
-
-}
-
+/* this resets all the sliders and spinboxes to initial condition*/
 void 
 Sharpen::reset(){
 	// disable signals
@@ -183,6 +154,25 @@ Sharpen::reset(){
 
 }
 
+/* this disables all components if flag is true or enables all component if flag is false*/
+void
+Sharpen::disable(bool flag){
+	m_sliderXsz->setDisabled(flag);
+	m_sliderYsz->setDisabled(flag);
+
+	m_spinBoxXsz->setDisabled(flag);
+	m_spinBoxYsz->setDisabled(flag);
+
+	m_sliderFctr->setDisabled(flag);
+	m_spinBoxFctr->setDisabled(flag);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+// slot function for change in row slider or spinbox
 void
 Sharpen::changeXsz(int xsz){
 	if (xsz % 2 == 0 && xsz > 0){ // maintain odd
@@ -217,6 +207,7 @@ Sharpen::changeXsz(int xsz){
 	g_mainWindowP->displayOut();
 }
 
+//slot function for change in cllumn slider or spinbox
 void
 Sharpen::changeYsz(int ysz){
 	if (ysz % 2 == 0 && ysz > 0){ // maintain odd
@@ -252,6 +243,7 @@ Sharpen::changeYsz(int ysz){
 	g_mainWindowP->displayOut();
 }
 
+// slot if check box for coupling x and y sliders  or spinbox
 void
 Sharpen::changeCouple(int){
 	if (m_coupleSZ->isChecked()){
@@ -308,3 +300,38 @@ Sharpen::changeFctr(int fctr){
 	g_mainWindowP->displayOut();
 
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+/* filter functions*/
+///////////////////////////////////////////////////////////////////////////////
+
+/*this function turns output image I2 to sharpened input image I1
+fiurst i blur the image then subtract the blur from input image then i multyuply the result by factor then i 
+add it to original image*/
+void
+Sharpen::getSharp(ImagePtr I1, int xsz,int ysz, int fctr, ImagePtr I2){
+
+	// turn I2 to blur of I1
+	Blur::getBlur(I1, xsz, ysz, I2);
+
+	int w = I1->width();  // input image
+	int h = I1->height();
+	int total = w * h; // 
+
+	int type;
+	ChannelPtr<uchar> p1, p2, endd;
+	int val = 0;
+	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
+
+		for (endd = p1 + total; p1 < endd;) {
+			val= *p1 - *p2; // diff to orgnal picture to blurred
+			val= CLIP((val * fctr),0,MXGRAY-1); // multiply by factor
+			*p2 = CLIP(val + *p1, 0, MXGRAY - 1); // add to input
+			p1++; p2++;
+		}
+	}
+
+}
+
+

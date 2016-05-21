@@ -12,21 +12,24 @@ class Median :
 
 public:
 		Median	(QWidget *parent = 0);
-		QGroupBox*			controlPanel();			// create control panel
-		void				reset();		// reset parameters
-		bool				applyFilter(ImagePtr, ImagePtr);// apply filter to input to init output
-		void				disable(bool);
-		uchar				median(uchar* sum, int avg, int size);
-		void				get_med(ChannelPtr<uchar> p2, 
-									std::deque < uchar* > buffer,
-									int xsz ,int ysz, int w, int avg);
-		void				get_med_Hist(ChannelPtr<uchar> p2,
-										std::deque < uchar* > buffer,
-										int xsz, int ysz, int w,int avg);
+		QGroupBox*		controlPanel	();			// create control panel
+		void			reset			();		// reset parameters
+		bool			applyFilter		(ImagePtr, ImagePtr);// apply filter to input to init output
+		void			disable			(bool);
 
+
+	// median functions
 protected:
-	void		getMedian(ImagePtr I1, int xsz,int ysz, int avg, ImagePtr I2);
-	
+	void		getMedian   // main median function
+				(ImagePtr I1, int xsz,int ysz, int avg, ImagePtr I2);
+	void		get_med  // this checks oif median filter or hist filter to be used for buffer
+				(ChannelPtr<uchar> p2, std::deque < uchar* > buffer, int xsz, int ysz, int w, int avg);
+
+	void		get_med_Sort
+				(ChannelPtr<uchar> p2, std::deque <uchar* > buffer, int xsz, int ysz, int w, int avg);   // this gives sorted median value
+	void		get_med_Hist  // this performs histogram median method
+				(ChannelPtr<uchar> p2, std::deque < uchar* > buffer, int xsz, int ysz, int w, int avg);
+
 protected slots:
 	void		changeSliderX(int);
 	void		changeSliderY(int);

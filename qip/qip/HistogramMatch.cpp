@@ -4,14 +4,17 @@
 
 extern MainWindow *g_mainWindowP;
 
-///////////////////////////////////////////////////////////////////////////
-/* add slider and spinbox*/
-
+// constructor
 HistogramMatch::
 HistogramMatch(QWidget *parent) : ImageFilter(parent)
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+/*virtual functions first*/
+///////////////////////////////////////////////////////////
+
+/* add slider and spinbox*/
 QGroupBox*
 HistogramMatch::controlPanel(){
 	m_ctrlGrp = new QGroupBox("Histogram Match");
@@ -42,6 +45,7 @@ HistogramMatch::controlPanel(){
 
 	return(m_ctrlGrp);
 }
+
 ///////////////////////////////////////////////////////////////////////////
 /* read slider value and perform the operation*/
 /*creates a histogram based on slider value
@@ -97,26 +101,12 @@ HistogramMatch::disable(bool flag){
 
 }
 
-// get a histogram from a image ptr
-void
-HistogramMatch::getHistogram(ImagePtr I1, int histogram[]){
-
-	int w = I1->width();  // input image
-	int h = I1->height();
-	int total = w * h; // 
-	int type;
-
-	for (int i = 0; i < MXGRAY; ++i) histogram[i] = 0;
-
-	ChannelPtr<uchar> p1, endd;
-
-	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++){
-		for (endd = p1 + total; p1 < endd;) histogram[*p1++]++;
-	}
-}
+///////////////////////////////////////////////////////////////////////////////////////
+/* slot functions*/
+///////////////////////////////////////////////////////////////////////////////
 
 // this is called by the slider signal  to call apply filter
-void 
+void
 HistogramMatch::changeHist(int val){
 	m_SpinBoxHistMatch->blockSignals(true);
 	m_SpinBoxHistMatch->setValue(val);
@@ -134,6 +124,7 @@ HistogramMatch::changeHist(int val){
 
 }
 // this is called by spibox to apply filter 
+
 void
 HistogramMatch::changeHistSpin(int val){
 	m_SpinBoxHistMatch->blockSignals(true);
@@ -153,7 +144,14 @@ HistogramMatch::changeHistSpin(int val){
 
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/* filter functions*/
+///////////////////////////////////////////////////////////////////////////////
+
 // main function that matches the histogram
+/* this takes the line function from apply filter then converts it to a pixel hoistpogram, then it allocates pixels to 
+left and right of bins. then i check if the pixel is filled in left based on target histogram and if it is i go to right bin
+i also check if it exceeds the left reserve. */
 void 
 HistogramMatch::HistMatch(ImagePtr I1, long double target_Histogram[], ImagePtr I2){
 
@@ -168,6 +166,8 @@ HistogramMatch::HistMatch(ImagePtr I1, long double target_Histogram[], ImagePtr 
 	int left[MXGRAY];
 	int right[MXGRAY];
 	int reserveLeft[MXGRAY];
+	
+	// this function calculates histogram of image
 	getHistogram(I1, histogram_input);
 
 	double Havg; // find level to equalize
@@ -215,33 +215,61 @@ HistogramMatch::HistMatch(ImagePtr I1, long double target_Histogram[], ImagePtr 
 		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
 		for (endd = p1 + total; p1 < endd;) {
 			int p = left[*p1];
+			
 			//now compare how much of value can be added to the slot by comparing reserved place
-			if (histogram_input[p] < histogram_target[p]){	
+			if (histogram_input[p] < histogram_target[p]){
+				
 				// if histogram output  value is less than avg then copy point
 				// but 1st check if it is reserved space
-			if (left2[*p1] != p) *p2 = p; 
-				/* so check if left[*p1] is original left if it is so then check the reserved value, if
-				reserved value is 0, then move to next place */
+				if (left2[*p1] != p) *p2 = p;
+				
+				// so check if left[*p1] is original left 
 				else {
+				
+					//if it is so then check the reserved value, if
 					if (reserveLeft[*p1] > 0){
 						reserveLeft[*p1]--;
 						*p2 = p;
 					}
+			
+					//	reserved value is 0, then move to next place 
 					else{
-						left[*p1] = (p + 1< right[*p1]) ? p + 1 : right[*p1];
+						left[*p1] = (p + 1 < right[*p1]) ? p + 1 : right[*p1];
 						p = left[*p1];
 						*p2 = p;
 					}
 				}
 			}
+
+			// if histogram target is met then simply set the left to be the tight bin unless it is already right
 			else{
-				left[*p1] = (p + 1< right[*p1]) ? p + 1 : right[*p1];
+				left[*p1] = (p + 1 < right[*p1]) ? p + 1 : right[*p1];
 				p = left[*p1];
 				*p2 = p;
 			}
+
+			// fill output histogram and assigh value to output image
 			histogram_input[p]++;
 			*p1++;
 			*p2++;
 		}
+	}
+}
+
+// get a histogram from a image ptr
+void
+HistogramMatch::getHistogram(ImagePtr I1, int histogram[]){
+
+	int w = I1->width();  // input image
+	int h = I1->height();
+	int total = w * h; // 
+	int type;
+
+	for (int i = 0; i < MXGRAY; ++i) histogram[i] = 0;
+
+	ChannelPtr<uchar> p1, endd;
+
+	for (int ch = 0; IP_getChannel(I1, ch, p1, type); ch++){
+		for (endd = p1 + total; p1 < endd;) histogram[*p1++]++;
 	}
 }

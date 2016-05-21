@@ -27,11 +27,18 @@ class event:
         self.stock_takable=1
         self.refill= False
         self.in_clerk =False
-        self.in_shelf = True
+        self.in_shelf = False
+        self.exited  = False
+    
+    def __del__(self):
+        self=None
+
+    def reserve(self):
+        self.curr_store.reserve_event.append(self)
 
     def execute(self,CLOCK):
-        print("TIME: %f, Customer %d reached %s"%(CLOCK, self.name, self.type))
-        self.curr_store.print_s()
+        #print("TIME: %f, Customer %d reached %s"%(CLOCK, self.name, self.type))
+        #self.curr_store.print_s()
         self.function(self)
 
     def stock_take(self):
@@ -90,6 +97,8 @@ class store:
         self.shelf_exit_time = 0
         self.clerk_exit_time = 0
    
+        self.reserve_event = []
+
     def restock(self, val):
         self.curr_shelf.stock = val
 
