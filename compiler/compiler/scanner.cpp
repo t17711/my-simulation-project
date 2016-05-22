@@ -3,11 +3,16 @@
 
 using namespace std;
 
+// constructor that reads the file converts file to upper case char array
 scanner::scanner(){
 		while (true) {
 			string name;// = "test.txt";
-			std::cout << " enter file name: ";
+			std::cout << " enter file name (or e for exit) : ";
 			std::cin >> name;
+			if (name == "e") {
+				printf("goodbye");
+				exit(0);
+			}
 			const char* t = name.c_str();
 			pfile = fopen(t, "rb"); // rb is read as binary
 			
@@ -68,12 +73,14 @@ scanner::scanner(){
 		//cout << "\nfinish" << endl;
 	}
 
+// deletes allocated arrays
 scanner::~scanner(){
 		fclose(pfile);
 		free(buffer);
 
 	}
 
+// prints tokens
 void
 scanner::print(){
 		int t = 0;
@@ -85,6 +92,7 @@ scanner::print(){
 		std::cout << std::endl << std::endl;
 	}
 
+// sent here for last token
 void
 scanner::get_eof()
 	{
@@ -92,6 +100,7 @@ scanner::get_eof()
 		token_list[j]->name = TK_EOF;
 	}
 
+// creates dictionary of keywords
 void
 scanner::get_key_table(){
 		key_table["CHAR"] = TK_CHAR_DEF;
@@ -114,16 +123,22 @@ scanner::get_key_table(){
 		key_table["SWITCH"] = TK_SWITCH;
 		key_table["CASE"] = TK_CASE;
 		key_table["DEFAULT"] = TK_DEFAULT;
+		key_table["PROCEDURE"] = TK_PROCEDURE_DEF;
 
 	}
 
+// checks keywoords
 void
 scanner::check_keyword(token* tk)
 	{
 		token_name t = key_table[tk->id];
 		if (t != TK) tk->name = t;
 	}
-//main scanner 
+
+/**************************************************************************************************************/
+/********************************main scanner***************************************************************/
+/**************************************************************************************************************/
+// This looks at individual characters and checks if they are possibly id, or operators or whitespace then sends them to correct procedure
 void
 scanner::get_token()
 	{
@@ -160,6 +175,9 @@ scanner::get_token()
 
 	}
 
+// if a char is read first then it is id, check if id is keyword
+// keyword can include numbers and _ bun cannot start with them.
+// if any illegal char ios found the id upto that char is individual id 
 void
 scanner::identifier()
 	{
@@ -205,6 +223,7 @@ scanner::identifier()
 		}
 	}
 
+// this is to check different types of operator
 void 
 scanner::operator_token()
 	{
@@ -228,6 +247,12 @@ scanner::operator_token()
 			break;
 		case ')':
 			token_list[j++]->name = TK_CLOSE;
+			break;
+		case '[':
+			token_list[j++]->name = TK_SQUARE_OPEN;
+			break;
+		case ']':
+			token_list[j++]->name = TK_SQUARE_CLOSE;
 			break;
 		case '+':
 			token_list[j++]->name = TK_PLUS;
@@ -298,8 +323,8 @@ scanner::operator_token()
 		case ',':
 			token_list[j++]->name = TK_COMMA;
 			break;
-		case '#':
-			hash_token();
+		//case '#':
+		//	hash_token();
 			return;
 		case ':':
 			token_list[j++]->name = TK_COLON;
@@ -320,6 +345,9 @@ scanner::operator_token()
 		get_token();
 	}
 
+// if char starts with number then go to number
+// checks for float
+// and integer and char 'E' for exponent
 void 
 scanner::digit_token()
 	{
@@ -371,6 +399,7 @@ scanner::digit_token()
 		}
 	}
 
+// if there is decimal in number than it is float
 void 
 scanner::float_token()
 {
@@ -418,6 +447,7 @@ scanner::float_token()
 	}
 }
 
+// if the float or integer number has 'E' charthen it is exponent
 void
 scanner::exp_token()
 {
@@ -453,72 +483,7 @@ scanner::exp_token()
 	}
 }
 
-void 
-scanner::hash_token()
-{
-	//	printf("hash_token\n");
-	if (buffer[i++] == 'I'	&&
-		buffer[i++] == 'N'	&&
-		buffer[i++] == 'C'	&&
-		buffer[i++] == 'L'	&&
-		buffer[i++] == 'U'	&&
-		buffer[i++] == 'D'	&&
-		buffer[i++] == 'E')
-	{
-		while (buffer[i] != EOF && buffer[i] != '"' && buffer[i] != '<')
-			i++;
-		if (buffer[i] == EOF){
-			get_eof();
-			return;
-		}
-		else if (buffer[i] == '"'){
-			i++;
-			include_token(0);
-			return;
-		}
-		else if (buffer[i] == '<'){
-			i++; j++;
-			include_token(1);
-			return;
-		}
-	}
-	else {
-		printf("bad # ");
-		get_eof();
-		return;
-	}
-}
-
-void 
-scanner::include_token(int type)
-{
-	//printf("include_token\n");
-	token_list[j]->name = TK_INCLUDE;
-	char comparer, curr;
-	if (type == 0)
-		comparer = '"';
-	else if (type == 1)
-		comparer = '>';
-	// go inside include
-	while (buffer[i] != comparer && buffer[i] != EOF){
-		curr = buffer[i++];
-		token_list[j]->id += curr;
-	}
-	if (buffer[i] == EOF)
-	{
-		printf("bad include syntax. no closing %c \n", comparer);
-		j++;
-		get_eof();
-		return;
-	}
-	else
-	{
-		i++; j++;
-		get_token();
-		return;
-	}
-}
-
+// this thisng starts from " and ends at another " and returns string value
 void 
 scanner::get_string_token()
 {
@@ -539,7 +504,8 @@ scanner::get_string_token()
 	return get_token();
 
 }
-	
+
+// this starts at one ' and has one char or \n then ends with ' and returns the char
 void
 scanner::get_char_token(){
 	//std::cout << buffer[i] << endl;
@@ -576,7 +542,9 @@ scanner::get_char_token(){
 		get_token();
 	}
 }
-	
+
+// this scans // and skips all char after that upto endline
+// also it scans/* and skips all char upto */
 void 
 scanner::comment( int type)
 {

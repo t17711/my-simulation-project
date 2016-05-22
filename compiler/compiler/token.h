@@ -35,6 +35,15 @@
 	tk(op_jtrue)\
 	tk(op_dup)\
 	tk(op_remove)\
+	tk(op_restore)\
+	tk(op_geti)\
+	tk(op_getc)\
+	tk(op_getf)\
+	tk(op_getb)\
+	tk(op_puti)\
+	tk(op_putc)\
+	tk(op_putf)\
+	tk(op_putb)\
 	tk(op_placeholder)\
 
 enum code_tk {
@@ -96,6 +105,10 @@ static const char *code_tk_string[] = {
 	tk2(TK_SWITCH)\
 	tk2(TK_CASE)\
 	tk2(TK_DEFAULT)\
+	tk2(TK_SQUARE_OPEN)\
+	tk2(TK_SQUARE_CLOSE)\
+	tk2(TK_PROCEDURE_DEF)\
+
 
 	
 	enum token_name {

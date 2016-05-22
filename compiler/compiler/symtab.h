@@ -11,11 +11,8 @@ public:
 	~symtab();
 
 	void insert_id(string, char c);
-	void insert(string, char);
-	void insert(string, int);
-	void insert(string, float);
-	void insert(string, string);
-	void insert(string, bool);
+	void insert_addr(string, int, char);
+	void insert_array(string, int, char);
 
 	bool check_symtab(string id);
 	char type(string id);

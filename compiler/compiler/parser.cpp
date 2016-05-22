@@ -1,5 +1,6 @@
 #include "parser.h"
 
+// constructor that just copys pointer to token list, initializes code array, and symtab
 parser::parser(token** c, int token_size)
 {
 	stack = new symtab(token_size * 10);
@@ -9,6 +10,9 @@ parser::parser(token** c, int token_size)
 	currtoken = 0;
 }
 
+/********************************************************************************/
+/***************code addition to code list**********************************************/
+/********************************************************************************/
 /*this puts code enum to the list*/
 void
 parser::gen_op_code(code_tk t){
@@ -19,7 +23,7 @@ parser::gen_op_code(code_tk t){
 	//cout <<  code_tk_string[t]   <<endl;
 }
 
-/*this adds value to the */
+/*this adds integer to the code array*/
 void
 parser::gen_address(int addr){
 	*(int*)(code + ip) = addr;
@@ -28,6 +32,7 @@ parser::gen_address(int addr){
 
 }
 
+/*this adds char to the code array*/
 void
 parser::gen_char(char t){
 	*(code+ip) = t;
@@ -35,6 +40,7 @@ parser::gen_char(char t){
 	//cout << t << endl;
 }
 
+/*this adds bool to the code array*/
 void
 parser::gen_bool(bool v){
 	*(bool*)(code + ip) = v;
@@ -44,8 +50,10 @@ parser::gen_bool(bool v){
 
 }
 
+/*this adds float to the code array*/
 void
 parser::gen_float(float t, int e){
+	// e is exponential value that is added to float
 	float x = t;
 	if (e > 0){
 		while (e > 0){
@@ -63,12 +71,39 @@ parser::gen_float(float t, int e){
 	ip += sizeof(float);
 	//cout << t << endl;
 }
-// this starts program
+
+/********************************************************************************/
+/***************parser that creates code**********************************************/
+/********************************************************************************/
+// this starts program 
+// body is 
+/*  {
+	{
+	var declaration
+	}
+	{
+	statements
+	}
+	proicedures
+	}
+*/
+
 void 
 parser::start_prog(){
 	match(TK_BEGIN);
-	var_decl();
+	var_decl(); 
 	statements();
+	gen_op_code(op_jmp); // save to skip procedure
+	int hole=ip; // save for later
+	gen_address(0);
+	procedures();
+
+	// skip procedures
+	int save = ip;
+	ip = hole;
+	gen_address(save);
+	ip = save;
+
 	match(TK_END);
 	if (token_list[currtoken]->name == TK_EOF) {
 		gen_op_code(op_eof);
@@ -79,7 +114,10 @@ parser::start_prog(){
 
 }
 
-// this declares item
+/********************************************************************************/
+/***************parser declaration**********************************************/
+/********************************************************************************/
+// this starts declaration block that does multiple declaration
 void
 parser::var_decl(){
 
@@ -92,7 +130,7 @@ parser::var_decl(){
 
 }
 
-// this does inner declaration statements
+// this calculates single declaration line
 void
 parser::decl(){
 
@@ -103,8 +141,41 @@ parser::decl(){
 	else{
 		// if scope continues
 		char t = type();
-		namelist(t);
+		if (token_list[currtoken]->name == TK_SQUARE_OPEN)
+			array_decl(t);
+		else
+		namelist(t); // get names of ids declared and assign them type t and add to symtab
+	}
+}
+// this is to declare arrays
+void
+parser::array_decl(char t){
+	// check current lists to see if we need tpo add
+	match(TK_SQUARE_OPEN);
+	int size = token_list[currtoken]->int_value;
+	match(TK_INT);
+	match(TK_SQUARE_CLOSE);
 
+	string curr = token_list[currtoken]->id;
+
+	// if it is in symtab  show erro
+	if (stack->check_symtab(curr)) {
+		error(" already declared ", curr, ' ');
+		return;
+	}
+
+	//if not add to stack, just inserts to map declares type
+	stack->insert_array(curr, size, t);
+	match(TK_ID);
+
+	if (token_list[currtoken]->name == TK_SEMICOLON){
+		match(TK_SEMICOLON);
+		decl();
+	}
+	else {
+		error("no id, there is ", token_name_string[token_list[currtoken]->name], ' ');
+		std::exit(0);
+		return;
 	}
 }
 
@@ -117,12 +188,13 @@ parser::namelist(char t){
 	// if it is in symtab  show erro
 	if (stack->check_symtab(curr)) {
 		error(" already declared ",curr,' ');
-		return;
+		std::exit(0);
 	}
 
 	//if not add to stack, just inserts to map declares type
 	stack->insert_id(curr, t);
 	match(TK_ID);
+
 	// if there is comm skip
 	if (token_list[currtoken]->name == TK_COMMA){
 		match(TK_COMMA);
@@ -134,7 +206,7 @@ parser::namelist(char t){
 	}
 	else {
 		error("no id there is ", token_name_string[token_list[currtoken]->name], ' ');
-		return;
+		std::exit(0);
 	}
 }
 
@@ -157,6 +229,12 @@ parser::type(){
 	case TK_FLOAT_DEF:
 		match(TK_FLOAT_DEF);
 		return 'F';
+	case TK_PROCEDURE_DEF:
+		match(TK_PROCEDURE_DEF);
+		return 'P';
+
+	// insert integer value to symarray
+
 	// now for literals dont match 
 	case TK_CHAR:
 		return 'C';
@@ -176,6 +254,57 @@ parser::type(){
 		return 't';
 	}
 	currtoken++;
+}
+
+/********************************************************************************/
+/***************parser statements**********************************************/
+/********************************************************************************/
+
+//procedures
+
+void 
+parser::procedures(){
+	if (token_list[currtoken]->name == TK_END){
+		return; // if thre is no more procedure just return
+	}
+	else {
+		string name = token_list[currtoken]->id;
+		char t = type();
+		match(TK_ID);
+		stack->insert_addr(name, ip, t); // insert current code address to the symtab
+		statements(); // just run statements
+		gen_op_code(op_restore); // go back to place after call
+		procedures();
+	}
+}
+
+// this is for calling procedure
+void
+parser::procedure_call(){
+	string name = token_list[currtoken]->id;
+	int proc_addr = stack->get_address(name);
+
+	match(TK_ID);
+	match(TK_OPEN);
+	match(TK_CLOSE);
+	match(TK_SEMICOLON);
+
+	// save address to stack
+	gen_op_code(op_pushi); // go to procedure
+	int ret_place = ip;
+	gen_address(0);  // save position to return
+
+	gen_op_code(op_push);
+
+	gen_address(proc_addr);
+	gen_op_code(op_restore); // this uses pushed value to go to ip
+
+	int save = ip;
+	ip = ret_place;
+	gen_address(save);
+	ip = save;
+
+
 }
 
 // this is statements
@@ -205,6 +334,15 @@ parser::statment_types(){
 		case TK_EQUAL:
 			assignment();
 			break;
+		case TK_OPEN:
+			procedure_call();
+			break;
+		case TK_SQUARE_OPEN:
+			array_assign();
+			break;
+		default:
+			error("syntax error ", token_name_string[curr2], " not correct");
+			std::exit(0);
 		}
 		break;
 
@@ -238,20 +376,111 @@ parser::statment_types(){
 
 	default:
 		error(" bad statement", " " , " ");
-		exit(0);
+		std::exit(0);
 	}
 	// now go check if there are more statements
 	statment_types();
 	// need to do calculator here
 }
 
+/********************************************************************************/
+/***************parser assignment**********************************************/
+/********************************************************************************/
+
+void
+parser::array_assign(){
+	string id = token_list[currtoken]->id;
+	int addr = stack->get_address(id);
+	match(TK_ID);
+	match(TK_SQUARE_OPEN);
+	int i = token_list[currtoken]->int_value;
+	match(TK_INT);
+	char type = *(stack->symarray + addr + sizeof(char)+sizeof(int));
+
+	code_tk get_code = op_placeholder;
+
+	int elem_size = 0;
+	switch (type){
+	case 'I':
+		elem_size = sizeof(int);
+		get_code = op_puti;
+		break;
+	case 'C':
+		elem_size = sizeof(char);
+		get_code = op_putc;
+		break;
+	case 'B':
+		elem_size = sizeof(bool);
+		get_code = op_putb;
+		break;
+	case 'F':
+		elem_size = sizeof(float);
+		get_code = op_putf;
+		break;
+
+	default:
+		error(id, " got bad array type during declaration for ", type);
+		std::exit(0);
+	}
+
+
+	int lo = *(int*)(stack->symarray + addr + sizeof(int) + 2 * sizeof(char)); // array type, type,lo,Hi,.......
+	int hi = *(int*)(stack->symarray + addr + sizeof(int)+ 2 * sizeof(char)+sizeof(int)); // array type, type,lo,Hi,.......
+	
+	addr = *(int*)(stack->symarray + addr + sizeof(char));
+
+	if (i < lo || i > hi){
+		error("Out of index array", " ", id);
+		std::exit(0);
+	}
+	match(TK_SQUARE_CLOSE);
+
+	// now generate code
+	gen_op_code(op_pushi);
+	gen_address(i);
+	gen_op_code(op_pushi);
+	gen_address(lo);
+
+	gen_op_code(op_sub);
+
+	gen_op_code(op_pushi);
+	gen_address(elem_size);
+
+	gen_op_code(op_mul);
+
+
+	gen_op_code(op_pushi);
+	gen_address(addr);
+
+	gen_op_code(op_add);
+
+	
+	match(TK_EQUAL);
+	
+	//call id literrak, plus minus stuff
+	expression();
+	// now arthematic or procedure here
+
+	match(TK_SEMICOLON);
+
+	gen_op_code(get_code);
+
+}
+
+
 // this assigns value to a variable
 void
 parser::assignment(){
 	// get stuff to assign
 	//cout << " got into assignment\n";
+	if (token_list[currtoken+1]->name == TK_SQUARE_OPEN){
+		array_assign();
+		return;
+	}
 	int addr = stack->get_address(token_list[currtoken]->id);
+
 	match(TK_ID);
+	
 	match(TK_EQUAL);
 	
 	//call id literrak, plus minus stuff
@@ -266,6 +495,9 @@ parser::assignment(){
 
 }
 
+/********************************************************************************/
+/***************parser exression**********************************************/
+/********************************************************************************/
 // these do calculator funct
 void
 parser::expression(){
@@ -377,6 +609,76 @@ parser::mul_div(){
 
 }
 
+void
+parser::array_value(){
+	string id = token_list[currtoken]->id;
+	int addr = stack->get_address(id);
+	match(TK_ID);
+	match(TK_SQUARE_OPEN);
+	int i = token_list[currtoken]->int_value;
+	match(TK_INT);
+	char type = *(stack->symarray + addr + sizeof(char)+sizeof(int));
+
+	code_tk get_code = op_placeholder;
+
+	int elem_size = 0;
+	switch (type){
+	case 'I':
+		elem_size = sizeof(int);
+		get_code = op_geti;
+		break;
+	case 'C':
+		elem_size = sizeof(char);
+		get_code = op_getc;
+		break;
+	case 'B':
+		elem_size = sizeof(bool);
+		get_code = op_getb;
+		break;
+	case 'F':
+		elem_size = sizeof(float);
+		get_code = op_getf;
+		break;
+
+	default:
+		error(id, " got bad array type during declaration for ", type);
+		std::exit(0);
+	}
+
+
+	int lo = *(int*)(stack->symarray + addr + 2 * sizeof(char) + sizeof(int)); // array type, type,lo,Hi,.......
+	int hi = *(int*)(stack->symarray + addr + 2 * sizeof(char)+ 2* sizeof(int)); // array type, type,lo,Hi,.......
+	addr = *(int*)(stack->symarray + addr + sizeof(char));
+
+	if (i < lo || i > hi){
+		error("Out of index array", " ", id);
+		std::exit(0);
+	}
+	match(TK_SQUARE_CLOSE);
+
+	// now generate code
+	gen_op_code(op_pushi);
+	gen_address(i);
+	gen_op_code(op_pushi);
+	gen_address(lo);
+
+	gen_op_code(op_sub);
+
+	gen_op_code(op_pushi);
+	gen_address(elem_size);
+
+	gen_op_code(op_mul);
+
+
+	gen_op_code(op_pushi);
+	gen_address(addr);
+
+	gen_op_code(op_add);
+
+	gen_op_code(get_code);
+
+}
+
 // this checks if there are more expressions or address to be looked for
 void
 parser::value(){
@@ -392,9 +694,13 @@ parser::value(){
 
 		break;
 	case TK_ID:
-		gen_op_code(op_push);
-		gen_address(stack->get_address(id));
-		match(TK_ID);
+		if (token_list[currtoken + 1]->name == TK_SQUARE_OPEN)
+			array_value();
+		else{
+			gen_op_code(op_push);
+			gen_address(stack->get_address(id));
+			match(TK_ID);
+		}
 		break;
 
 	// check for char value
@@ -456,7 +762,6 @@ parser::value(){
 }
 
 // print statement
-
 void
 parser::print(){
 	match(TK_PRINT);
@@ -480,7 +785,7 @@ parser::print(){
 					break;
 				default:
 					error("bad string operator ", cstr[j], " ");
-					exit(0);
+					std::exit(0);
 
 				}
 
@@ -504,6 +809,9 @@ parser::print(){
 	match(TK_SEMICOLON);
 }
 
+/********************************************************************************/
+/***************parser loops and conditions**********************************************/
+/********************************************************************************/
 // do while loop
 void parser::do_while(){
 	match(TK_DO);
@@ -648,8 +956,8 @@ void parser::m_switch(){
 	match(TK_END);
 	gen_op_code(op_remove);
 }
-// this checks and increments current token position
 
+// this checks and increments current token position
 void parser::m_for(){
 	match(TK_FOR);
 	match(TK_OPEN);
@@ -685,7 +993,6 @@ void parser::m_for(){
 	// now arthematic or procedure here
 
 	match(TK_CLOSE);
-
 	gen_op_code(op_pop);
 	gen_address(addr);
 
@@ -719,7 +1026,7 @@ parser::match(token_name t){
 	if (t != token_list[currtoken]->name){
 		error(" wrong token ", token_name_string[token_list[currtoken]->name], " ");
 		error("instead of ",token_name_string[t], " ");
-		exit(0);
+		std::exit(0);
 	}
 	else{
 		//cout << "matched ";

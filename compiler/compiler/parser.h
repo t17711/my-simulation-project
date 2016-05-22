@@ -32,6 +32,7 @@ public:
 	void var_decl();
 	void decl();
 	void namelist(char t);
+	void array_decl(char t);
 
 	// got to statement lock here
 	void statements();
@@ -39,14 +40,20 @@ public:
 	// this does single statement
 	void statment_types();
 
+	// procedures
+	void procedures();
+	void procedure_call();
+
 	// this assigns value
 	void assignment();
+	void array_assign();
 
 	// these are for calculator
 	void expression();
 	void add_sub();
 	void mul_div();
 	void value();
+	void array_value();
 	void expression_mul_div();
 
 	// do while statement

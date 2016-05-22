@@ -38,6 +38,21 @@ public:
 
 	int dup();
 	int remove();
+	int restore();
+
+	// for get and put
+
+	int geti();
+	int getc();
+	int getf();
+	int getb();
+
+	int puti();
+	int putc();
+	int putf();
+	int putb();
+
+
 
 public:
 	char* code;	

@@ -1,5 +1,6 @@
 #include "symtab.h"
 
+// initialize variables
 symtab::symtab(int size)
 {
 	MAX = size;
@@ -8,6 +9,7 @@ symtab::symtab(int size)
 	for (int i = 0; i<MAX; ++i) *(symarray + i) = 0;
 }
 
+// check if an id is in symtab
 bool
 symtab::check_symtab(string id){
 	std::map<string, int>::iterator it;
@@ -17,6 +19,8 @@ symtab::check_symtab(string id){
 	else
 		return false;
 }
+
+// extend symtab
 void
 symtab::extend(symtab b){
 	this->pos = b.pos;
@@ -29,11 +33,22 @@ symtab::extend(symtab b){
 }
 
 // just add id to map dont add to array
-
+// also add type as char to array for easier type
 void symtab::insert_id(string id, char c){
 	address[id] = pos;
+	if (MAX / 2 < pos){ // assert that array is enpugh to hold all values
+		char* temp = (char*)malloc(sizeof(char)* 2 * MAX);
+
+		// copy values
+		for (int i = 0; i < MAX; ++i) *(temp + i) = *(symarray + i);
+
+		free(symarray);// clear old memory 
+		symarray = temp; // point to new array
+		MAX *= 2;
+
+	}
 	switch (c){
-	case 'I':
+	case 'I':  // add space for char that defines type and then place for int value
 		*(symarray + pos) = 'I';
 		pos++;
 		pos += sizeof(int);
@@ -58,45 +73,118 @@ void symtab::insert_id(string id, char c){
 		pos++;
 		pos += sizeof(char);
 		break;
+	case 'P':  // add space for procedure spaces, no arguements now
+		*(symarray + pos) = 'P';
+		pos++;
+		pos += sizeof(int); // add space for address
+		break;
 	}
 }
 
-void symtab::insert(string id, int val){
+void symtab::insert_addr(string id, int val, char type){
 	// need to be already declared
 	// taken care of that in parser
-	*(symarray + pos) = 'I';
-	pos += sizeof(char);
-	*((int*)symarray + pos)=val;
-}
-void symtab::insert(string id, char val){
-	*(symarray + pos) = 'C';
-	 pos += sizeof(char);
-	*(symarray + pos) = val;
+	int val2 = get_address(id);
+	*(symarray + val2) = type;
+	val2 += sizeof(char);
+	*(int*)(symarray + val2) = val;
 }
 
-void symtab::insert(string id, float val){
-	*(symarray + pos) = 'F';
-	pos += sizeof(float);
-	*((float*)symarray + pos) = val;
+// insert array
+void symtab::insert_array(string id, int size, char type){
+	address[id] = pos;
+	if (MAX / 2 < pos + size){ // assert that array is enpugh to hold all values
+		int next_size = MAX * 2 + pos + size;
+		char* temp = (char*)malloc(sizeof(char)* 2 * next_size);
+
+		// copy values
+		for (int i = 0; i < MAX; ++i) *(temp + i) = *(symarray + i);
+
+		free(symarray);// clear old memory 
+		symarray = temp; // point to new array
+		MAX = next_size;
+	}
+
+	// declare this is array
+	*(symarray + pos) = 'A';
+	pos++;
+	int low = 0;;
+	int high;
+	int addr;
+	// only integer index, 
+	// in symaray : = A, addressof start, type of element, lo ,high, lo is always 0
+	//now look for how many space to store
+	switch (type){
+	case 'I':  // add space for char that defines type and then place for int value
+		high = low + sizeof(int)*size;
+
+		addr = pos;
+		pos += sizeof(int);
+		*(symarray + pos) = 'I';
+		pos++;
+
+		*(int*)(symarray + pos) = low;
+		pos += sizeof(int);
+		*(int*)(symarray + pos) = high;
+		pos += sizeof(int);
+
+		*(int*)(symarray + addr) = pos;
+		pos += high;
+		break;
+	case 'C':
+		high = low + sizeof(char)*size;
+
+		addr = pos;
+		pos += sizeof(int);
+		*(symarray + pos) = 'C';
+		pos++;
+
+		*(int*)(symarray + pos) = low;
+		pos += sizeof(int);
+		*(int*)(symarray + pos) = high;
+		pos += sizeof(int);
+
+		*(int*)(symarray + addr) = pos;
+		pos += high;
+		break;
+	case 'F':
+		high = low + sizeof(float)*size;
+
+		addr = pos;
+		pos += sizeof(int);
+		*(symarray + pos) = 'F';
+		pos++;
+
+		*(int*)(symarray + pos) = low;
+		pos += sizeof(int);
+		*(int*)(symarray + pos) = high;
+		pos += sizeof(int);
+
+		*(int*)(symarray + addr) = pos;
+		pos += high;
+		break;
+	case 'B':
+		high = low + sizeof(bool)*size;
+
+		addr = pos;
+		pos += sizeof(int);
+		*(symarray + pos) = 'B';
+		pos++;
+
+		*(int*)(symarray + pos) = low;
+		pos += sizeof(int);
+		*(int*)(symarray + pos) = high;
+		pos += sizeof(int);
+
+		*(int*)(symarray + addr) = pos;
+		pos += high;
+	default:
+		printf("illegal array type" + type);
+	}
+
 }
 
-void symtab::insert(string id, string val){
-	// need to be already declared
-	// taken care of that in parser
-	*(symarray + pos) = 'S';
-	pos += sizeof(char);
-	*((string**)symarray + pos) = &val;
-}
-
-void symtab::insert(string id, bool val){
-	// need to be already declared
-	// taken care of that in parser
-	*(symarray + pos) = 'B';
-	pos += sizeof(char);
-	*(symarray + pos) = val;
-	// minimum is char, char > bool
-}
-
+// get type of a id
 char symtab::type(string id){
 	int i = address[id];
 	char x;
@@ -109,16 +197,19 @@ char symtab::type(string id){
 	return x;
 }
 
+// get address of a id
 int symtab::get_address(string id){
 	return address[id];
 }
 
+//. print symtab address and id
 void symtab::print(){
 	for (auto it = address.cbegin(); it != address.cend(); ++it)
 	{
 		std::cout << it->first << " address is: " << it->second << endl;
 	}
 }
+
 symtab::~symtab()
 {
 	free(symarray);

@@ -12,6 +12,8 @@ execute::execute(char* code, symtab* tab){
 
 }
 
+/*******************push*************************/
+// this pushes the address value that follows code to stack
 int execute::push(){
 	ip += sizeof(code_tk);
 
@@ -19,11 +21,23 @@ int execute::push(){
 	ip += sizeof(int);
 
 	char type = *(table->symarray + addr);
+	int t = 0;
 	switch (type){
 	case 'I':
 		*(int*)(stack + is) = *(int *)(table->symarray + addr + sizeof(char));
 		is += sizeof(int);
 		*(stack+is) = 'I';
+		is += sizeof(char);
+		break;
+	case 'P':  // procedure has integer value for address
+		  t= *(int *)(table->symarray + addr + sizeof(char));
+		 if (t == 0){
+			 error("procedure declared but not created", " ", " ");
+			 exit(0);
+		 }
+		 *(int*)(stack + is) = t;
+		is += sizeof(int);
+		*(stack + is) = 'I';
 		is += sizeof(char);
 		break;
 	case 'C':
@@ -47,10 +61,12 @@ int execute::push(){
 		is += sizeof(char);
 
 		break;
+
 	}
 	return 1;
 }
 
+// these push the literal value that follows code to stack
 int execute::pushi(){
 	ip += sizeof(code_tk);
 	
@@ -116,13 +132,15 @@ int execute::pushf(){
 
 	is += sizeof(float);
 
-	*(stack + is) = 'C';
+	*(stack + is) = 'F';
 
 	is += sizeof(char);
 
 	return 1;
 }
 
+/*******************pop*************************/
+// this sets the stack value to the address that follow code
 int execute::pop(){
 	ip += sizeof(code_tk);
 	int addr = *(int*)(code + ip);
@@ -136,6 +154,12 @@ int execute::pop(){
 	addr += sizeof(char);
 
 	switch (type2){
+	case 'P':
+		if (type1 == 'I'){ // if procedure address is integer
+			is -= sizeof(int);
+			*(int*)(table->symarray + addr) = *(int*)(stack + is);
+			break;
+		}
 	case 'I':
 		switch (type1){
 		case 'I':
@@ -179,15 +203,15 @@ int execute::pop(){
 		switch (type1){
 		case 'I':
 			is -= sizeof(int);
-			*(int*)(table->symarray + addr) = *(int*)(stack + is);
+			*(float*)(table->symarray + addr) = static_cast<float>(*(int*)(stack + is));
 			break;
 		case 'F':
 			is -= sizeof(float);
-			*(int*)(table->symarray + addr) = (int)*(float*)(stack + is);
+			*(float*)(table->symarray + addr) = static_cast<float>(*(float*)(stack + is));
 			break;
 		case 'C':
 			is -= sizeof(char);
-			*(int*)(table->symarray + addr) = (int)*(stack + is);
+			*(float*)(table->symarray + addr) = static_cast<float>((*stack + is));
 			break;
 		default:
 			error("bad type ", type1, " ");
@@ -206,7 +230,9 @@ int execute::pop(){
 	}
 	return 1;
 }
-	
+
+/*******************print*************************/
+// this uses c++ code to print item in stack
 int execute::print(){
 	ip += sizeof(code_tk);
 	is -= sizeof(char);
@@ -241,6 +267,7 @@ int execute::print(){
 	return 1;
 }
 
+// this prints character that follows code to make print easier
 int execute::printc(){
 	ip += sizeof(code_tk);
 	std::cout << *(code + ip);
@@ -248,6 +275,9 @@ int execute::printc(){
 	return 1;
 }
 
+
+/*******************calculations*************************/
+// adds two values in stack
 int execute::add(){
 	ip += sizeof(code_tk);
 	// go back to type
@@ -439,6 +469,7 @@ int execute::add(){
 	return 1;
 }
 
+// subtract top value in stack from one before it
 int execute::sub(){
 	// negate last #
 	neg();
@@ -448,6 +479,7 @@ int execute::sub(){
 	return 1;
 }
 
+// multiplies two values in stack
 int execute::mul(){
 	ip += sizeof(code_tk);
 	// go back to type
@@ -637,6 +669,7 @@ int execute::mul(){
 	return 1;
 }
 
+//  top value in stack divide one before it
 int execute::div(){
 	is -= sizeof(char);
 	char type = *(stack + is);
@@ -661,6 +694,33 @@ int execute::div(){
 	return 1;
 }
 
+// negates top value in stack
+int execute::neg(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char type = *(stack + is);
+	switch (type){
+	case 'I':
+		is -= sizeof(int);
+		*(int*)(stack + is) = -*(int*)(stack + is);
+		is += sizeof(int);
+		is += sizeof(char);
+		break;
+	case 'F':
+		is -= sizeof(int);
+		*(float*)(stack + is) = -*(float*)(stack + is);
+		is += sizeof(float);
+		is += sizeof(char);
+		break;
+	default:
+		error("type error in negation", " ", " ");
+	}
+
+	return 1;
+}
+
+/*******************boolean calculations*************************/
+// compare top two consquuetivbe values in stack
 int execute::and(){
 	ip += sizeof(code_tk);
 	// go back to type
@@ -690,49 +750,6 @@ int execute::and(){
 	}
 	else{
 		error("COmparision type error ", " ", type1);
-		exit(0);
-	}
-	return 1;
-}
-
-int execute::neg(){
-	ip += sizeof(code_tk);
-	is -= sizeof(char);
-	char type = *(stack+is);
-	switch (type){
-	case 'I':
-		is -= sizeof(int);
-		*(int*)(stack + is) = -*(int*)(stack + is);
-		is += sizeof(int);
-		is += sizeof(char);
-		break;
-	case 'F':
-		is -= sizeof(int);
-		*(float*)(stack + is) = -*(float*)(stack + is);
-		is += sizeof(float);
-		is += sizeof(char);
-		break;
-	default:
-		error("type error in negation", " ", " ");
-	}
-
-	return 1;
-}
-
-int execute::not(){
-	ip += sizeof(code_tk);
-	is -= sizeof(char);
-
-	char type = *(stack + is);
-
-	if (type == 'B'){
-		is -= sizeof(char);
-		*(bool*)(stack + is) = !(*(bool*)(stack + is));
-		is += sizeof(char);
-		is += sizeof(char);
-	}
-	else{
-		error("cant negate not bool ", type, " ");
 		exit(0);
 	}
 	return 1;
@@ -1707,19 +1724,27 @@ int execute::eql(){
 	return 1;
 }
 
-int execute::jmp(){
+// perform operation on top stack
+int execute::not(){
 	ip += sizeof(code_tk);
+	is -= sizeof(char);
 
-	int val = *(int*)(code + ip);
-	ip = val;
+	char type = *(stack + is);
+
+	if (type == 'B'){
+		is -= sizeof(char);
+		*(bool*)(stack + is) = !(*(bool*)(stack + is));
+		is += sizeof(char);
+		is += sizeof(char);
+	}
+	else{
+		error("cant negate not bool ", type, " ");
+		exit(0);
+	}
 	return 1;
 }
 
-int execute::eof(){
-	ip += sizeof(code_tk);
-	return 1;
-}
-
+// if top of stack is true jump to address that follows code else skip
 int execute::jtrue(){
 	ip += sizeof(code_tk);
 	int pos = *(int*)(code + ip);
@@ -1745,6 +1770,8 @@ int execute::jtrue(){
 	ip = pos;
 	return 1;
 }
+
+// if top of stack is false jump to address that follows code else skip
 int execute::jfalse(){
 	ip += sizeof(code_tk);
 	int pos = *(int*)(code + ip);
@@ -1771,16 +1798,30 @@ int execute::jfalse(){
 	return 1;
 }
 
+/******************code address manipulation**************/
+// jump to address that follows code
 
-/////////incomplete/////////////////////
-///////////////////////////////////////////
-//////////////////////////////
-
-int execute::pos(){
+int execute::jmp(){
 	ip += sizeof(code_tk);
+
+	int val = *(int*)(code + ip);
+	ip = val;
 	return 1;
 }
 
+// jump to address in stack
+int execute::restore(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	is -= sizeof(int);
+
+	int val = *(int*)(stack + is);
+	ip = val;
+	return 1;
+}
+
+/*******************do operation in item in stack **************************/
+// duplicate top item in stack
 int execute::dup(){
 	ip += sizeof(code_tk);
 	is -= sizeof(char);
@@ -1818,6 +1859,7 @@ int execute::dup(){
 	return 1;
 }
 
+// remove top item in stack
 int execute::remove(){
 	ip += sizeof(code_tk);
 	is -= sizeof(char);
@@ -1840,5 +1882,223 @@ int execute::remove(){
 		exit(0);
 	}
 
+	return 1;
+}
+
+/***********************direct aymtab address manipulation **************/
+
+// get item from symtab from adress that follows code
+int execute::geti(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	if (t != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now get value from symtab from addr
+	*(int*)(stack + is) = *(int*)(table->symarray + addr);
+
+	is += sizeof(int);
+	*(stack + is) = 'I';
+	is += sizeof(char);
+	return 1;
+
+}
+
+int execute::getc(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	if (t != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now get value from symtab at addr 
+	*(char*)(stack + is) = *(char*)(table->symarray + addr);
+
+	is += sizeof(char);
+	*(stack + is) = 'I';
+	is += sizeof(char);
+	return 1;
+
+}
+
+int execute::getf(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	if (t != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now get value from symtab at addr 
+	*(float*)(stack + is) = *(float*)(table->symarray + addr);
+
+	is += sizeof(float);
+	*(stack + is) = 'I';
+	is += sizeof(char);
+	return 1;
+
+}
+
+int execute::getb(){
+	ip += sizeof(code_tk);
+	is -= sizeof(char);
+	char t = *(stack + is);
+	if (t != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now get value from symtab at addr 
+	*(bool*)(stack + is) = *(bool*)(table->symarray + addr);
+
+	is += sizeof(char);
+	*(stack + is) = 'I';
+	is += sizeof(char);
+	return 1;
+
+}
+
+int execute::puti(){
+	ip += sizeof(code_tk);
+
+	// get value first that we put to addr
+	is -= sizeof(char);
+	char t = *(stack + is);
+
+	// get to val
+	is -= sizeof(int);
+	int val = *(int*)(stack + is);
+
+	// now get addr
+	is -= sizeof(char);
+	char type = *(stack + is);
+	if (type != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+
+
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now put value to symtab at addr 
+	*(int*)(table->symarray + addr) = val;
+	return 1;
+
+}
+
+// put item on symtab at adress that follows code
+int execute::putc(){
+	ip += sizeof(code_tk);
+
+	// get value first that we put to addr
+	is -= sizeof(char);
+	char t = *(stack + is);
+
+	// get to val
+	is -= sizeof(char);
+	char val = *(stack + is);
+
+	// now get addr
+	is -= sizeof(char);
+	char type = *(stack + is);
+	if (type != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now put value to symtab at addr 
+	*(table->symarray + addr) = val;
+	return 1;
+
+}
+
+int execute::putf(){
+	ip += sizeof(code_tk);
+
+	// get value first that we put to addr
+	is -= sizeof(char);
+	char t = *(stack + is);
+
+	// get to val
+	is -= sizeof(float);
+	float val = *(float*)(stack + is);
+
+	// now get addr
+	is -= sizeof(char);
+	char type = *(stack + is);
+	if (type != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now put value to symtab at addr 
+	*(float*)(table->symarray + addr) = val;
+	return 1;
+
+}
+
+int execute::putb(){
+	ip += sizeof(code_tk);
+
+	// get value first that we put to addr
+	is -= sizeof(char);
+	char t = *(stack + is);
+
+	// get to val
+	is -= sizeof(char);
+	bool val = *(bool*)(stack + is);
+
+	// now get addr
+	is -= sizeof(char);
+	char type = *(stack + is);
+	if (type != 'I'){
+		error("bad address type ", " ", t);
+		exit(0);
+	}
+	is -= sizeof(int);
+	int addr = *(int*)(stack + is);
+
+	// now put value to symtab at addr 
+	*(bool*)(table->symarray + addr) = val;
+	return 1;
+
+}
+
+/*************end of program******************/
+int execute::eof(){
+	ip += sizeof(code_tk);
+	return 1;
+}
+
+
+/////////incomplete/////////////////////
+///////////////////////////////////////////
+//////////////////////////////
+
+int execute::pos(){
+	ip += sizeof(code_tk);
 	return 1;
 }
