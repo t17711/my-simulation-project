@@ -16,6 +16,9 @@ public:
 	int ip;
 	char* code;
 
+	bool proceed = false;
+	bool error = false;
+
 public:
 	parser(token** c, int token_size);
 	void code_print();

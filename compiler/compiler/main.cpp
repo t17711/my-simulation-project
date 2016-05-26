@@ -11,10 +11,20 @@ int main(int argc, char **argv)
 	Restart:
 	scanner c = scanner();
 	c.get_token();
+
+	if (c.proceed == false){
+		printf("restart program");\
+		goto Restart;
+	}
 	//c.print();
 	
 	parser p = parser(c.token_list, c.j);
 	p.start_prog();
+
+	if (p.proceed == false){
+		printf("restart program");
+		goto Restart;
+	}
 	//p.code_print();
 	//p.stack->print();
 	
@@ -64,12 +74,16 @@ typedef int (execute::*Function) ();
 	   &execute::putf,
 	   &execute::putb
    };
-
-	while (t != op_eof){
-		//std::cout << code_tk_string[t] << endl;
-		t = *(code_tk*)(e.code + e.ip);
-		(e.*exe[t])();
-	}
+   int v = 0;
+   while (t != op_eof){
+	   //std::cout << code_tk_string[t] << endl;
+	   t = *(code_tk*)(e.code + e.ip);
+	   v = (e.*exe[t])();
+	   if (v == 0)
+	   {
+		   goto Restart;
+	   }
+   }
 
 	goto Restart;
 	return 0;

@@ -20,48 +20,143 @@ CUSTOMERS = 1
 
 # now for  modelling create a graph of store area
 store_weight = [0.1, 0.3, 0.5, 0.8, 1.0]  # [0.1,0.2,0.3,0.5,0.7,0.8,1.0]
-graph = []  # size should be 15 for modelling
 
+store_exists_at_node = []
 
-def simulation_start(graph_nodes: list, time: object) -> object:
-    # create stores
-    for i in range(len(store_weight)):
-        store_list.append(Store(i, graph_nodes[i]))  ## crate a store on name num and addr from graph
-    customer_arrivals(time)
+# every nodes have same length for convenience
+top =0
+graph = {1: [2, 6],
+         2: [1, 3, 5],
+         3: [2, 4, 5],
+         4: [3, 7],
+         5: [2, 3, 7, 10],
+         6: [1, 7, 8],
+         7: [4, 5, 6, 8],
+         8: [6, 7, 9],
+         9: [8, 10],
+         10: [9, 5]
+         }  # size should be 10 for modelling
 
+# now weighed graph to show average time it takes to directly go from one point to other
+#            1,      2,         3,        4,         5,          6,          7,         8   ,       9,      10
+'''       [np.inf,  np.inf, np.inf,   np.inf,   np.inf,     np.inf,     np.inf,    np.inf,     np.inf,    np.inf],'''
+# the time from distribution to store is time from t to store + 1
+weighed_graph = \
+    [[0,       1,     np.inf,   np.inf,   np.inf,     2,         np.inf,    np.inf,     np.inf,    np.inf],
+     [1,      0,       2,      np.inf,   3,         np.inf,     np.inf,    np.inf,     np.inf,    np.inf],
+     [np.inf,  2,      0,       2,       3,         np.inf,     np.inf,    np.inf,     np.inf,    np.inf],
+     [np.inf,  np.inf,  2,      0,        np.inf,     np.inf,     1,        np.inf,     np.inf,    np.inf],
+     [np.inf,  3,      np.inf,  np.inf,   0,          np.inf,     np.inf,    np.inf,     np.inf,        3],
+     [2,      np.inf,  np.inf,  np.inf,   np.inf,     0,          1,        2,         np.inf,    np.inf],
+     [np.inf,  np.inf, np.inf,   1,       2,         1,         0,         1,         np.inf,    np.inf],
+     [np.inf,  np.inf, np.inf,   np.inf,   np.inf,     2,         1,        0,          2,        np.inf],
+     [np.inf,  np.inf, np.inf,   np.inf,   np.inf,     np.inf,     np.inf,    2,         0,             1],
+     [np.inf,  np.inf, np.inf,   np.inf,   3,         np.inf,     np.inf,    np.inf,     1,             0]]
 
 Min_time = 0.005  # 1 seconds is smallest arrival interval
 
 
+# start simulation
+def simulation_start(graph_nodes: list, time: float) -> object:
+    # create stores
+    global top
+    global store_exists_at_node
+    global store_list
+
+    # set top item
+    top = graph_nodes[0]
+
+    # generate stores
+    for i in range(len(store_weight)):
+        str = Store(i, graph_nodes[i])
+        str.restock(SHELF_CAPACITY* (1.1 - store_weight[i]))
+        store_list.append(str)  # crate a store on name num and addr from graph
+        e = Event(i, str, daily_refill, REFILL_TIME + get_random(2))
+        e.type = "Daily Refill"
+        event_list.append(e)
+
+    # now show where in graph node that stuff exists
+    for i in range(10):
+        store_exists_at_node.append(False)
+
+    for i in graph_nodes:
+        store_exists_at_node[i] = True
+
+    customer_arrivals(time)
+
+
+# just floyd to calculate time before simulation, later i add some random number to this
+def floyd(mat_input):
+    l = len(mat_input)
+    for k in range(l):
+        for i in range(l):
+            for j in range(l):
+                mat_input[i][j] = min(mat_input[i][j], mat_input[i][k] + mat_input[k][j])
+
+
 # generates random exponential time
-def get_random(t):
+def get_random(time_get):
     np.random.seed()
-    x = np.random.exponential(1 / t)
+    x = np.random.exponential(1 / time_get)
     return x
 
 
+# this just reads store_weight
 def get_time(store1, store2):
-    # to do
+    # just get time from weighed which has gone through floyd algorithm
+    if store1 < 0:
+        str1 = store_list[store2].address
+        time_get = weighed_graph[str1][1] + 1
 
-    t = abs((store2 - store1) * 2)
-    if store2 < 0:
-        t *= 2
-    t = Min_time + random.uniform(0, t)
-    return t
+    elif store2 < 0:
+        str1 = store_list[store1].address
+        time_get = weighed_graph[str1][1] + 1
+    else:
+        str1 = store_list[store1].address
+        str2 = store_list[store2].address
+        time_get = weighed_graph[str1][str2]
+
+    time_get += Min_time + random.uniform(0, time_get)
+
+    return time_get
 
 
+# this just look at addresses and go upside of graph
 def get_upper_store(store1):
-    # to do
-    return store1 - 1
+
+    str1 = store_list[store1].address
+    if str1 is top:
+        return -1
+
+    minimum = 0
+
+    for i in range(len(weighed_graph)):
+        # for all address with value less than current address find the minimum address where a store exists
+        if i < str1 and weighed_graph[str1][i] < weighed_graph[str1][minimum] and store_exists_at_node[i] is True:
+            minimum = i
+
+    if minimum == 0:
+        return 0
+
+    # get store
+    for i in store_list:
+        if i.address is minimum:
+            minimum = i.name
+            break
+    return minimum
 
 
+# this calculates amount of stock that a store gets
 def get_stock_to_refill(store1):
-    # to do
-    return (len(store_list) - store1) * 100 + 100
+    val = 1000* (1.1 - store_weight[store1])
+    return val
 
 
+# this adds refill event to list
 def refill_go(curr_event):
-    print("%d Store arrived for refill from %d at %f" % (curr_event.name, curr_event.curr_store.name, CLOCK))
+    print("%d Store (address %d) arrived for refill from %d (addr %d) at %f" %
+          (curr_event.name, store_list[curr_event.name].address,
+           curr_event.curr_store.name, store_list[curr_event.curr_store.name].address, CLOCK))
 
     store_index = get_upper_store(curr_event.curr_store.name)
     t = get_time(curr_event.curr_store.name, store_index)
@@ -73,7 +168,8 @@ def refill_go(curr_event):
         curr_event.update("Returned from Refill distribution center", refill_return, CLOCK + t)
     else:
         # if not go to upper Store
-        print("%d went to %d  at %f" % (curr_event.name, store_index, CLOCK))
+        print("%d (address %d) went to %d (address %d) at %f" %
+              (curr_event.name, store_list[curr_event.name].address,  store_index, store_list[store_index].address, CLOCK))
         curr_event.update("Reached Refill", refill_take, CLOCK + t)
         curr_event.curr_store = store_list[store_index]
         #  store_list[curr_event.name].shelf_exit_time = CLOCK+ t +Min_time
@@ -82,16 +178,18 @@ def refill_go(curr_event):
     event_list.append(curr_event)
 
 
+# this takes stock from distribution or upper store
 def refill_take(curr_event):
     random.seed()
     stor2 = curr_event.curr_store
 
     # this is refill Event
-    if stor2.curr_shelf.stock > curr_event.stock_takable:
+    if stor2.curr_shelf.stock * .25 > curr_event.stock_takable:
         t = get_time(curr_event.name, curr_event.curr_store.name)
         t = random.uniform(0, t) + t
 
-        print("%d got refill from %d  at %f" % (curr_event.name, stor2.name, CLOCK))
+        print("%d (address %d) got refill from %d (address %d) at %f" %
+              (curr_event.name, store_list[curr_event.name].address, stor2.name, store_list[stor2.name].address,CLOCK))
         stor2.curr_shelf.stock -= curr_event.stock_takable
         # store_list[curr_event.name].shelf_exit_time+= t +Min_time
         curr_event.update("Refill Return", refill_return, CLOCK + t)
@@ -102,8 +200,10 @@ def refill_take(curr_event):
         curr_event.execute(CLOCK)
 
 
+# this adds stock to original
 def refill_return(curr_event):
-    print("%d returned with stock at%f  " % (curr_event.name, CLOCK))
+    print("%d (address %d)returned with stock at%f  "
+          % (curr_event.name, store_list[curr_event.name].address, CLOCK))
     restock_time.append(CLOCK)
 
     # set the Store to be same as name
@@ -128,6 +228,7 @@ def refill_return(curr_event):
     del curr_event
 
 
+# customer event reaches clerk
 def clerk_arrive(curr_event):
     # free Shelf
     curr_event.set_shelf_status(NOT_BUSY)
@@ -159,6 +260,7 @@ def clerk_arrive(curr_event):
         event_list.append(curr_event)
 
 
+# customer event exits simulation
 def clerk_exit(curr_event):
     # set Clerk status not busy
     curr_event.set_clerk_status(NOT_BUSY)
@@ -175,6 +277,7 @@ def clerk_exit(curr_event):
     # print("cleared %d"%(n))
 
 
+# customer event arrives at store
 def shelf_arrive(curr_event):
     random.seed()
     global CLOCK
@@ -248,6 +351,7 @@ def shelf_arrive(curr_event):
         event_list.append(curr_event)
 
 
+# this generates customer arrival events
 def generate_arrival_event():
     global event_list
     global CUSTOMERS
@@ -268,7 +372,29 @@ def generate_arrival_event():
         print("no create")
 
 
-def customer_arrivals(max_clock: int) -> object:
+# this generates refill event
+def daily_refill(curr_event):
+    print("%d (address %d) Got daily refill at %f  "
+          % (curr_event.name, store_list[curr_event.name].address, CLOCK))
+
+    restock_time.append(CLOCK)
+
+    # set the Store to be same as name
+    store_curr = curr_event.curr_store
+
+    # here just increase value of stock
+    val = get_stock_to_refill(store_curr.name)
+    store_curr.restock(val)
+    # set the refill flag off
+
+    curr_event.time = CLOCK + REFILL_TIME
+    event_list.append(curr_event)
+
+
+# this is main simulation loop
+# #######################################################
+# ######################################################
+def customer_arrivals(max_clock: float) -> object:
     global CLOCK
     global CUSTOMERS
     global event_list
@@ -278,8 +404,7 @@ def customer_arrivals(max_clock: int) -> object:
     CUSTOMERS = 1
 
     generate_arrival_event()
-
-    # generate customer, it will add arrival to list    
+    # generate customer, it will add arrival to list
     """Create new customers until the sim time reaches Max."""
     while CLOCK < max_clock:
         event_list.sort(key=lambda s: s.time, reverse=True)
@@ -302,3 +427,5 @@ def customer_arrivals(max_clock: int) -> object:
         # remove it from Event list , this will end this Event but will create new Event
         # for example arrive Event creates Shelf Event and theat creates Clerk Event
         # print("events in list  %d"%(len(event_list)))
+
+

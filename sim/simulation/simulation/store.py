@@ -4,6 +4,7 @@
 BUSY = True
 NOT_BUSY = False
 
+REFILL_TIME = 48
 # store constants
 QUEUE_LIMIT = 200
 NEXT_TIME = 0.0
@@ -41,9 +42,9 @@ class Event:
         self.curr_store.reserve_event.append(self)
 
     def execute(self, clock):
-        #print(u"TIME: {0:f}, ".format(clock))
-        print("TIME: %f, Customer %d reached %s"%(clock, self.name, self.type))
-        self.curr_store.print_s()
+        # print(u"TIME: {0:f}, ".format(clock))
+        # print("TIME: %f, Customer %d reached %s"%(clock, self.name, self.type))
+        # self.curr_store.print_s()
         self.function(self)
 
     @property

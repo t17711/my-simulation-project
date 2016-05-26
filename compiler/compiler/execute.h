@@ -61,6 +61,7 @@ public:
 	int is;
 	symtab* table;
 
-
+	bool proceed = false;
+	bool error = false;
 };
 

@@ -16,6 +16,8 @@ public:
 	int j;
 	map<string, token_name> key_table;
 	int key_n;
+	bool proceed = false;
+	bool error = false;
 
 public:
 	scanner();

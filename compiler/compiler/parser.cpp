@@ -91,8 +91,26 @@ parser::gen_float(float t, int e){
 void 
 parser::start_prog(){
 	match(TK_BEGIN);
+
+	// for error
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	var_decl(); 
+
+	if (error == true) {
+		proceed = false;
+		return;
+	}
 	statements();
+
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	gen_op_code(op_jmp); // save to skip procedure
 	int hole=ip; // save for later
 	gen_address(0);
@@ -108,6 +126,7 @@ parser::start_prog(){
 	if (token_list[currtoken]->name == TK_EOF) {
 		gen_op_code(op_eof);
 		match(TK_EOF);
+		proceed = true;
 		return;
 	}
 	else error("No end of file",' ',' ');
@@ -120,6 +139,10 @@ parser::start_prog(){
 // this starts declaration block that does multiple declaration
 void
 parser::var_decl(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
 
 	match(TK_BEGIN);
 
@@ -133,6 +156,10 @@ parser::var_decl(){
 // this calculates single declaration line
 void
 parser::decl(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
 
 	if (token_list[currtoken]->name == TK_END){
 		// return if scope closed
@@ -150,6 +177,11 @@ parser::decl(){
 // this is to declare arrays
 void
 parser::array_decl(char t){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	// check current lists to see if we need tpo add
 	match(TK_SQUARE_OPEN);
 	int size = token_list[currtoken]->int_value;
@@ -174,21 +206,25 @@ parser::array_decl(char t){
 	}
 	else {
 		error("no id, there is ", token_name_string[token_list[currtoken]->name], ' ');
-		std::exit(0);
-		return;
+		error = true; return;
 	}
 }
 
 // this looks if declaration is multiple
 void
 parser::namelist(char t){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	// check current lists to see if we need tpo add
 	string curr = token_list[currtoken]->id;
 
 	// if it is in symtab  show erro
 	if (stack->check_symtab(curr)) {
 		error(" already declared ",curr,' ');
-		std::exit(0);
+		error = true; return;
 	}
 
 	//if not add to stack, just inserts to map declares type
@@ -206,13 +242,18 @@ parser::namelist(char t){
 	}
 	else {
 		error("no id there is ", token_name_string[token_list[currtoken]->name], ' ');
-		std::exit(0);
+		error = true; return;
 	}
 }
 
 //this gives typeof variable
 char
 parser::type(){
+	if (error == true) {
+		proceed = false;
+		return 't';
+	}
+
 	switch (token_list [currtoken]->name){
 	case TK_CHAR_DEF:
 		match(TK_CHAR_DEF);
@@ -264,6 +305,11 @@ parser::type(){
 
 void 
 parser::procedures(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	if (token_list[currtoken]->name == TK_END){
 		return; // if thre is no more procedure just return
 	}
@@ -281,6 +327,11 @@ parser::procedures(){
 // this is for calling procedure
 void
 parser::procedure_call(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	string name = token_list[currtoken]->id;
 	int proc_addr = stack->get_address(name);
 
@@ -310,6 +361,11 @@ parser::procedure_call(){
 // this is statements
 void
 parser::statements(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	//cout << " got into statements\n";
 
 	// start scope
@@ -322,7 +378,17 @@ parser::statements(){
 // this checks for different type of statements
 void
 parser::statment_types(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	//cout << " got into statement types\n";
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	token_name curr = token_list[currtoken]->name;
 	token_name curr2 = token_list[currtoken + 1]->name;
 
@@ -342,7 +408,8 @@ parser::statment_types(){
 			break;
 		default:
 			error("syntax error ", token_name_string[curr2], " not correct");
-			std::exit(0);
+			error = true; return;
+			return;
 		}
 		break;
 
@@ -376,7 +443,7 @@ parser::statment_types(){
 
 	default:
 		error(" bad statement", " " , " ");
-		std::exit(0);
+		error = true; return;
 	}
 	// now go check if there are more statements
 	statment_types();
@@ -389,6 +456,11 @@ parser::statment_types(){
 
 void
 parser::array_assign(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	string id = token_list[currtoken]->id;
 	int addr = stack->get_address(id);
 	match(TK_ID);
@@ -420,7 +492,7 @@ parser::array_assign(){
 
 	default:
 		error(id, " got bad array type during declaration for ", type);
-		std::exit(0);
+		error = true; return;
 	}
 
 
@@ -431,7 +503,7 @@ parser::array_assign(){
 
 	if (i < lo || i > hi){
 		error("Out of index array", " ", id);
-		std::exit(0);
+		error = true; return;
 	}
 	match(TK_SQUARE_CLOSE);
 
@@ -471,6 +543,11 @@ parser::array_assign(){
 // this assigns value to a variable
 void
 parser::assignment(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	// get stuff to assign
 	//cout << " got into assignment\n";
 	if (token_list[currtoken+1]->name == TK_SQUARE_OPEN){
@@ -501,6 +578,11 @@ parser::assignment(){
 // these do calculator funct
 void
 parser::expression(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	expression_mul_div();
 	add_sub();
 }
@@ -508,6 +590,11 @@ parser::expression(){
 // addition, subtraction
 void
 parser::add_sub(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	token_name curr = token_list[currtoken]->name;
 	switch (curr){
 	case TK_PLUS:
@@ -538,6 +625,11 @@ parser::add_sub(){
 // multiplication start
 void
 parser::expression_mul_div(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	value();
 	mul_div();
 }
@@ -545,6 +637,11 @@ parser::expression_mul_div(){
 // multiplication, division end
 void
 parser::mul_div(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	token_name curr = token_list[currtoken]->name;
 
 	switch (curr){
@@ -611,6 +708,11 @@ parser::mul_div(){
 
 void
 parser::array_value(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	string id = token_list[currtoken]->id;
 	int addr = stack->get_address(id);
 	match(TK_ID);
@@ -642,7 +744,7 @@ parser::array_value(){
 
 	default:
 		error(id, " got bad array type during declaration for ", type);
-		std::exit(0);
+		error = true; return;
 	}
 
 
@@ -652,7 +754,7 @@ parser::array_value(){
 
 	if (i < lo || i > hi){
 		error("Out of index array", " ", id);
-		std::exit(0);
+		error = true; return;
 	}
 	match(TK_SQUARE_CLOSE);
 
@@ -682,6 +784,11 @@ parser::array_value(){
 // this checks if there are more expressions or address to be looked for
 void
 parser::value(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	token_name curr = token_list[currtoken]->name;
 	string id = token_list[currtoken]->id;
 	// 1st look if it a value
@@ -764,8 +871,19 @@ parser::value(){
 // print statement
 void
 parser::print(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_PRINT);
 	match(TK_OPEN);
+
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	// if there is string print string else print value
 	if (token_list[currtoken]->name == TK_STRING){
 		int i = token_list[currtoken]->id.length();
@@ -785,7 +903,7 @@ parser::print(){
 					break;
 				default:
 					error("bad string operator ", cstr[j], " ");
-					std::exit(0);
+					error = true; return;
 
 				}
 
@@ -814,6 +932,11 @@ parser::print(){
 /********************************************************************************/
 // do while loop
 void parser::do_while(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_DO);
 	int target = ip;
 	statements();
@@ -829,6 +952,11 @@ void parser::do_while(){
 
 //while
 void parser::m_while(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_WHILE);
 	
 	// for jump 
@@ -855,6 +983,11 @@ void parser::m_while(){
 
 // if statement
 void parser::m_if(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_IF);
 
 	// for jump 
@@ -897,6 +1030,11 @@ void parser::m_if(){
 /*************************************************/
 // while statement
 void parser::m_switch(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_SWITCH);
 	// this looks for expression and type
 
@@ -959,6 +1097,11 @@ void parser::m_switch(){
 
 // this checks and increments current token position
 void parser::m_for(){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	match(TK_FOR);
 	match(TK_OPEN);
 
@@ -1023,10 +1166,16 @@ void parser::m_for(){
 
 void
 parser::match(token_name t){
+	if (error == true) {
+		proceed = false;
+		return;
+	}
+
 	if (t != token_list[currtoken]->name){
 		error(" wrong token ", token_name_string[token_list[currtoken]->name], " ");
 		error("instead of ",token_name_string[t], " ");
-		std::exit(0);
+		proceed = false;
+		error = true; return;
 	}
 	else{
 		//cout << "matched ";

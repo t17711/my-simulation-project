@@ -35,7 +35,8 @@ scanner::scanner(){
 
 	
 		if (buffer == NULL) { error("Memory error", " ", " "); 
-		exit(2); }
+		error = true;
+		}
 
 		// copy the file into the buffer:
 		result = std::fread(buffer, 1, size, pfile);
@@ -98,6 +99,7 @@ scanner::get_eof()
 	{
 		//printf("get_eof");
 		token_list[j]->name = TK_EOF;
+		proceed = true;
 	}
 
 // creates dictionary of keywords
@@ -146,7 +148,7 @@ scanner::get_token()
 		char curr;
 		//while (i < result) token_list[i++] = new token(TK_INT, 10);
 	GET_TOKEN:
-
+		if (error == true) return;
 		// check if char are legal';
 		curr = buffer[i];
 
@@ -162,15 +164,15 @@ scanner::get_token()
 		}
 		else if ('A' <= curr && curr <= 'Z'){
 			identifier();
-			return;
+			goto GET_TOKEN;
 		}
 		else if ('0' <= curr && curr <= '9'){
 			digit_token();
-			return;
+			goto GET_TOKEN;
 		}
 		else {
 			operator_token();
-			return;
+			goto GET_TOKEN;
 		}
 
 	}
@@ -201,7 +203,7 @@ scanner::identifier()
 			
 			check_keyword(token_list[j]);
 			j++;
-			get_token();
+			
 			return;
 		}
 
@@ -218,7 +220,7 @@ scanner::identifier()
 		{
 			check_keyword(token_list[j]);
 			j++;
-			get_token();
+			
 			return;
 		}
 	}
@@ -340,9 +342,9 @@ scanner::operator_token()
 			return;
 		default:
 			error("incorrect operator", " ", " ");
-			exit(0);
+			error = true;
+			return;
 		}
-		get_token();
 	}
 
 // if char starts with number then go to number
@@ -385,7 +387,7 @@ scanner::digit_token()
 		else if (curr >= 'A' && curr <= 'Z')
 		{
 			printf("Error in integer: %c\n", curr);
-			get_eof();
+			error = true;
 			return;
 		}
 
@@ -393,7 +395,7 @@ scanner::digit_token()
 		else
 		{
 			token_list[j++]->name = TK_INT;  // ist take everything as int
-			get_token();
+			
 			return;
 
 		}
@@ -435,7 +437,7 @@ scanner::float_token()
 	else if (curr <= 32 || curr == ';')
 	{
 		j++;
-		get_token();
+		
 		return;
 	}
 	else
@@ -469,7 +471,7 @@ scanner::exp_token()
 	if (curr <= 32 || curr == ';')
 	{
 		j++;
-		get_token();
+		
 		return;
 	}
 	else
@@ -501,8 +503,6 @@ scanner::get_string_token()
 		curr = buffer[++i];
 	}
 	i++; j++;
-	return get_token();
-
 }
 
 // this starts at one ' and has one char or \n then ends with ' and returns the char
@@ -523,7 +523,7 @@ scanner::get_char_token(){
 			break;
 		default:
 			error("bad string operator ", buffer[i], " ");
-			exit(0);
+			error = true;
 		}
 		i++;
 	}
@@ -534,12 +534,12 @@ scanner::get_char_token(){
 		
 	if (buffer[i]!= '\''){
 		error("char not closed", buffer[i], " ");
-		exit(0);
+		error = true;
 	}
 	else{
 		i++;
 		j++;
-		get_token();
+		
 	}
 }
 
@@ -564,6 +564,6 @@ scanner::comment( int type)
 	}
 	i++;
 	//no j++ since it skips the operator
-	get_token();
+	
 	return;
 }
