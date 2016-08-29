@@ -10,14 +10,12 @@ QUEUE_LIMIT = 200
 NEXT_TIME = 0.0
 SHELF_NUMBER = 1
 
-CUSTOMER_ARRIVAL_RATE = SHELF_NUMBER * 60  # 2 PER 10 MIN
+CUSTOMER_ARRIVAL_RATE = 60  # 2 PER 10 MIN
 SHELF_CAPACITY = 1000
-SHELF_RATE = SHELF_NUMBER * 50
+SHELF_RATE = 50
 
 CLERK_NUMBER = 4
 CLERK_RATE = 20 * CLERK_NUMBER  # 1 PER MIN
-
-SHELF_NUMBER = 1
 
 RESTOCKING = False
 
@@ -57,7 +55,7 @@ class Event:
             return False
 
     def restock(self):
-        self.curr_store.restock(self.stock_takable)
+        self.curr_store.restock(int(self.stock_takable))
 
     def update(self, type_new, function_new, time_new):
         self.type = type_new
@@ -114,5 +112,5 @@ class Store:
         self.curr_shelf.stock = val
 
     def print_s(self):
-        print("Cureent Store name is %d, the Shelf queue is %d, the Clerk queue is %d, stock is %d\n"
+        print("Store name is %d, the Shelf queue is %d, the Clerk queue is %d, stock is %d"
               % (self.name, self.curr_shelf_queue, self.curr_clerk_queue, self.curr_shelf.stock))
