@@ -253,7 +253,6 @@ Contrast::contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2)
 		IP_getChannel(I2, ch, p2, type); // gets channle 0 1 or 2 (r, g ,b) array 
 		for (endd = p1 + total; p1 < endd;) *p2++ = lut[*p1++];  // set rgb to 0 below threshold and 255 above
 	}
-	// more stuff
 
 }
 
